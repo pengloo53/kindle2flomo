@@ -1,0 +1,164 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <title>Kindle to Flomo</title>
+  <style>
+    #app{
+      max-width: 1200px; 
+      margin: 0 auto;
+      padding: 20px 50px;
+      border: 2px solid #eeeeee;
+    }
+    .el-upload-list__item-name [class^=el-icon]{
+      height: auto
+    }
+
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <el-row :gutter="20">
+      <el-col :span="8">
+        <h3 style="color: #606266">请上传 Kindle 笔记文件</h3>
+        <el-upload class="upload-demo" drag action="#" :multiple="false" :file-list="fileList" :http-request="parse" :on-change="uploadChange" :on-exceed="exceed" :limit="1">
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">将 CSV 或 HTML 文件拖到此处，或<em>点击上传</em></div>
+          <div class="el-upload__tip" slot="tip">怎么获取笔记文件？</div>
+        </el-upload>
+        <div v-if="show">
+          <el-divider><i class="el-icon-upload" style="color: #909399"> 导入 FLOMO</i></el-divider>
+          <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px"
+            class="demo-ruleForm">
+            <el-form-item label="Flomo 专属 API（静态页面，不保存信息）" prop="api">
+              <el-input v-model="form.api" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
+            </el-form-item>
+            <el-form-item label="自定义分隔符（标注与笔记之间）" prop="delimiter">
+              <el-input v-model="form.delimiter" placeholder="默认空一行"></el-input>
+            </el-form-item>
+            <el-form-item label="是否顺序查看笔记（倒序插入）" prop="is_order">
+              <el-switch v-model="form.is_order" active-text="顺序" inactive-text="随机" :change="switchChange"></el-switch>
+              <p style="color: #606266">* 选择顺序查看，插入时间较长，平均每秒1条</p>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="danger" :disabled="form.is_disabled" :loading="form.is_loading" @click="post('form')">导入 Flomo</el-button>
+            </el-form-item>
+          </el-form>
+          <el-alert v-if="showUploadMessage" title="导入成功" type="success" :description="uploadMessage" show-icon></el-alert>
+        </div>
+      </el-col>
+      <el-col :span="16">
+        <h3 v-if="result.length" style="color: #606266">共 {{ result.length }} 条笔记</h3>
+        <el-card v-for="item in result" shadow="always" style="margin-bottom: 30px; font-size: 14px; color: #606266">
+          <el-tag>{{ item.tags }}</el-tag>
+          <p>{{ item.highlight }}</p>
+          <div v-if="item.note">
+            <span>{{ form.delimiter }}</span>
+            <p type="info">笔记：{{ item.note }}</p>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+  </div>
+</body>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<!-- axios -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      fileList: [],
+      form: {
+        delimiter: '',
+        api: '',
+        is_order: false,
+        is_disabled: false,
+        is_loading: false
+      },
+      rule: {
+        delimiter: [
+          { min: 1, max: 30, message: '长度在 1 到 30 个字符', trigger: 'blur' }
+        ],
+        api: [
+          { required: true, message: '请填写 Flomo 的 API 信息', trigger: 'blur' }
+        ],
+        is_order: false
+      },
+      result: [],
+      show: false,
+      showUploadMessage: false
+    },
+    methods: {
+      switchChange(r){
+        console.log(r)
+      },
+      uploadChange: function(file, fileList){
+        this.form.file = fileList[0].raw;
+      },
+      exceed: function(){
+        this.$message.error('一次只支持上传 1 个文件');
+      },
+      parse(formName) {
+        if(this.form.file){
+          let formData = new FormData();
+          formData.append("file", this.form.file);
+          axios.post('http://127.0.0.1:5000/parse', formData, {
+            "Content-Type": "multipart/form-data"
+          })
+          .then(response => {
+            this.result = response.data
+            this.show = true
+          })
+          .catch(error => {
+            console.log(error);
+          });
+        }else{
+          this.$message.error('请上传Kindle笔记文件');
+        }
+      },
+      post(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            if(this.result.length > 100){
+              return this.$message.error('Flomo API 每天只支持 100 条');
+            }
+            let formData = new FormData();
+            formData.append("api", this.form.api);
+            formData.append("delimiter", this.form.delimiter);
+            formData.append("is_order", this.form.is_order);
+            formData.append("data", JSON.stringify(this.result));
+            this.form.is_loading = true;
+            axios.post('http://127.0.0.1:5000/post', formData, {
+              "Content-Type": "multipart/form-data"
+            })
+            .then(response => {
+              console.log(response);
+              this.uploadMessage = response.data.message
+              this.form.is_disabled = true
+              this.form.is_loading = false
+              this.showUploadMessage = true
+            })
+            .catch(error => {
+              console.log(error);
+            });
+          } else {
+            return false;
+          }
+        });
+      }
+    }
+  })
+</script>
+
+</html>
