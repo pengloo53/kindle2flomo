@@ -113,7 +113,7 @@
         if(this.form.file){
           let formData = new FormData();
           formData.append("file", this.form.file);
-          axios.post('http://127.0.0.1:5000/parse', formData, {
+          axios.post('http://kindle2flomo.90byte.com/parse', formData, {
             "Content-Type": "multipart/form-data"
           })
           .then(response => {
@@ -139,7 +139,7 @@
             formData.append("is_order", this.form.is_order);
             formData.append("data", JSON.stringify(this.result));
             this.form.is_loading = true;
-            axios.post('http://127.0.0.1:5000/post', formData, {
+            axios.post('http://kindle2flomo.90byte.com/post', formData, {
               "Content-Type": "multipart/form-data"
             })
             .then(response => {
