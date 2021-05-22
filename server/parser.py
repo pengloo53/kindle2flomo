@@ -71,19 +71,19 @@ def parse_html_file(file_path):
                 if div['class'][0] == 'noteHeading' or div['class'][0] == 'noteText':
                     div_content = div.contents[0].string.strip()
                     result_arr.append(div_content)
-                    print(result_arr)
+                    # print(result_arr)
                     # 标注+笔记 -> flomo content
-                    for index, line in enumerate(result_arr):
-                        if line[:3] == '标注(' or line[:4] == '标注 (' or line[:4] == ' 标注(':
-                            highlight = strip_space(result_arr[index+1])
-                            tags = '#kindle/' + book_title.strip()
-                            result_json.append({
-                                "tags": tags,
-                                "highlight": highlight
-                            })
-                        if line[:5] == '笔记 - ' or line[:5] == '备注 - ':
-                            note = result_arr[index+1]
-                            the_result = result_json.pop()
-                            the_result['note'] = note
-                            result_json.append(the_result)
+            for index, line in enumerate(result_arr):
+                if line[:3] == '标注(' or line[:4] == '标注 (' or line[:4] == ' 标注(':
+                    highlight = strip_space(result_arr[index+1])
+                    tags = '#kindle/' + book_title.strip()
+                    result_json.append({
+                        "tags": tags,
+                        "highlight": highlight
+                    })
+                if line[:5] == '笔记 - ' or line[:5] == '备注 - ':
+                    note = result_arr[index+1]
+                    the_result = result_json.pop()
+                    the_result['note'] = note
+                    result_json.append(the_result)
         return result_json
