@@ -9,16 +9,20 @@
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <title>Kindle to Flomo</title>
   <style>
-    #app{
-      max-width: 1200px; 
+    #app {
+      max-width: 1200px;
       margin: 0 auto;
       padding: 20px 50px;
       border: 2px solid #eeeeee;
     }
-    .el-upload-list__item-name [class^=el-icon]{
+
+    .el-upload-list__item-name [class^=el-icon] {
       height: auto
     }
-
+    .help ul{
+      margin-top: 20px;
+      padding: 0;
+    }
   </style>
 </head>
 
@@ -27,11 +31,18 @@
     <el-row :gutter="20">
       <el-col :span="8">
         <h3 style="color: #606266">请上传 Kindle 笔记文件</h3>
-        <el-upload class="upload-demo" drag action="#" :multiple="false" :file-list="fileList" :http-request="parse" :on-change="uploadChange" :on-exceed="exceed" :limit="1">
+        <el-upload class="upload-demo" drag action="#" :multiple="false" :file-list="fileList" :http-request="parse"
+          :on-change="uploadChange" :on-exceed="exceed" :limit="1">
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将 CSV 或 HTML 文件拖到此处，或<em>点击上传</em></div>
-          <div class="el-upload__tip" slot="tip"><a href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd">怎么获取笔记文件？</a> & <a href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198220&idx=1&sn=5d0fecf4d3a4ab1469724292dad9797d&chksm=be5734058920bd13ac17f149d7a54dd01b17a066d70f55a813ebb338075b6837f6c6605b255b&token=1351484622&lang=zh_CN#rd">它的故事</a></div>
+          <!-- <div class="el-upload__tip" slot="tip">请使用手机导出HTML格式的笔记文件</div> -->
         </el-upload>
+        <div class="help">
+          <ul style="list-style: none;">
+            <li><el-link type="info" href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd" target="_blank">1. 怎么获取笔记文件？</el-link></li>
+            <li><el-link type="info" href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198220&idx=1&sn=5d0fecf4d3a4ab1469724292dad9797d&chksm=be5734058920bd13ac17f149d7a54dd01b17a066d70f55a813ebb338075b6837f6c6605b255b&token=1351484622&lang=zh_CN#rd" target="_blank">2. 想了解它的故事？</el-link></li>
+        </ul>
+        </div>
         <div v-if="show">
           <el-divider><i class="el-icon-upload" style="color: #909399"> 导入 FLOMO</i></el-divider>
           <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px"
@@ -47,14 +58,16 @@
               <p style="color: #606266">* 选择顺序查看，插入时间较长，平均每秒1条</p>
             </el-form-item>
             <el-form-item>
-              <el-button type="danger" :disabled="form.is_disabled" :loading="form.is_loading" @click="post('form')">导入 Flomo</el-button>
+              <el-button type="danger" :disabled="form.is_disabled" :loading="form.is_loading" @click="post('form')">导入
+                Flomo</el-button>
             </el-form-item>
           </el-form>
-          <el-alert v-if="showUploadMessage" title="导入成功" type="success" :description="uploadMessage" show-icon></el-alert>
+          <el-alert v-if="showUploadMessage" title="导入成功" type="success" :description="uploadMessage" show-icon>
+          </el-alert>
         </div>
       </el-col>
       <el-col :span="16">
-        <h3 v-if="result.length" style="color: #606266">共 {{ result.length }} 条笔记</h3>
+        <h3 v-if="result.length" style="color: #606266">共 {{ result.length }} 条笔记<span style="font-size: 0.7em">（Flomo 每天只支持上传 100 条 Memo）</span></h3>
         <el-card v-for="item in result" shadow="always" style="margin-bottom: 30px; font-size: 14px; color: #606266">
           <el-tag>{{ item.tags }}</el-tag>
           <p>{{ item.highlight }}</p>
@@ -100,37 +113,37 @@
       showUploadMessage: false
     },
     methods: {
-      switchChange(r){
+      switchChange(r) {
         console.log(r)
       },
-      uploadChange: function(file, fileList){
+      uploadChange: function (file, fileList) {
         this.form.file = fileList[0].raw;
       },
-      exceed: function(){
+      exceed: function () {
         this.$message.error('一次只支持上传 1 个文件');
       },
       parse(formName) {
-        if(this.form.file){
+        if (this.form.file) {
           let formData = new FormData();
           formData.append("file", this.form.file);
           axios.post('http://kindle2flomo.90byte.com/parse', formData, {
             "Content-Type": "multipart/form-data"
           })
-          .then(response => {
-            this.result = response.data
-            this.show = true
-          })
-          .catch(error => {
-            console.log(error);
-          });
-        }else{
+            .then(response => {
+              this.result = response.data
+              this.show = true
+            })
+            .catch(error => {
+              console.log(error);
+            });
+        } else {
           this.$message.error('请上传Kindle笔记文件');
         }
       },
       post(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            if(this.result.length > 100){
+            if (this.result.length > 100) {
               return this.$message.error('Flomo API 每天只支持 100 条');
             }
             let formData = new FormData();
@@ -142,16 +155,16 @@
             axios.post('http://kindle2flomo.90byte.com/post', formData, {
               "Content-Type": "multipart/form-data"
             })
-            .then(response => {
-              console.log(response);
-              this.uploadMessage = response.data.message
-              this.form.is_disabled = true
-              this.form.is_loading = false
-              this.showUploadMessage = true
-            })
-            .catch(error => {
-              console.log(error);
-            });
+              .then(response => {
+                console.log(response);
+                this.uploadMessage = response.data.message
+                this.form.is_disabled = true
+                this.form.is_loading = false
+                this.showUploadMessage = true
+              })
+              .catch(error => {
+                console.log(error);
+              });
           } else {
             return false;
           }

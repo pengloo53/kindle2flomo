@@ -54,23 +54,36 @@ def parse_html_file(file_path):
         else:
             book_title = book_title[1:desc_index]
         # 取标注和笔记
-        div_arr = soup.select('div')
-        for div in div_arr:
-            if div['class'][0] == 'noteHeading' or div['class'][0] == 'noteText':
-                div_content = div.contents[0].string.strip()
-                result_arr.append(div_content)
-        # 标注+笔记 -> flomo content
-        for index, line in enumerate(result_arr):
-            if line[:3] == '标注(':
-                highlight = strip_space(result_arr[index+1])
-                tags = '#kindle/' + book_title.strip()
+        # 由于 Mac 阅读软件导出的 HTML 文件结构有缺陷，Mac 导出的 HTML 不存在 div.noteHeading 的标签
+        div_noteHeading = soup.select('div.noteHeading')
+        if len(div_noteHeading) == 0:
+            div_text_arr = soup.select('div.noteText')
+            for div in div_text_arr:
+                # result_arr.append(div.contents[0].string.strip())
                 result_json.append({
-                    "tags": tags,
-                    "highlight": highlight
+                    "tags": '#kindle/' + book_title.strip(),
+                    "highlight": strip_space(div.contents[0].string.strip())
                 })
-            if line[:5] == '笔记 - ' or line[:5] == '备注 - ':
-                note = result_arr[index+1]
-                the_result = result_json.pop()
-                the_result['note'] = note
-                result_json.append(the_result)
+        # Windows 阅读软件 和 手机导出
+        else:
+            div_arr = soup.select('div')
+            for div in div_arr:
+                if div['class'][0] == 'noteHeading' or div['class'][0] == 'noteText':
+                    div_content = div.contents[0].string.strip()
+                    result_arr.append(div_content)
+                    print(result_arr)
+                    # 标注+笔记 -> flomo content
+                    for index, line in enumerate(result_arr):
+                        if line[:3] == '标注(' or line[:4] == '标注 (' or line[:4] == ' 标注(':
+                            highlight = strip_space(result_arr[index+1])
+                            tags = '#kindle/' + book_title.strip()
+                            result_json.append({
+                                "tags": tags,
+                                "highlight": highlight
+                            })
+                        if line[:5] == '笔记 - ' or line[:5] == '备注 - ':
+                            note = result_arr[index+1]
+                            the_result = result_json.pop()
+                            the_result['note'] = note
+                            result_json.append(the_result)
         return result_json
