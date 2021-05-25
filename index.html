@@ -10,75 +10,113 @@
   <title>Kindle to Flomo</title>
   <style>
     #app {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px 50px;
-      border: 2px solid #eeeeee;
+      display: flex;
+      justify-content: center;
+    }
+
+    .aside {
+      max-width: 360px;
+      margin: 20px;
+    }
+
+    .main {
+      margin: 20px;
+      max-width: 600px;
     }
 
     .el-upload-list__item-name [class^=el-icon] {
       height: auto
     }
-    .help ul{
+
+    .help ul {
       margin-top: 20px;
       padding: 0;
+    }
+
+    .main p {
+      line-height: 1.8;
+      margin: 0;
+      min-height: 20px;
+    }
+    .main .el-card {
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #606266
+    }
+    .main .el-card .el-card__body{
+      padding: 15px;
+    }
+    .selected{
+      border: 2px solid #5783F7;
     }
   </style>
 </head>
 
 <body>
   <div id="app">
-    <el-row :gutter="20">
-      <el-col :span="8">
-        <h3 style="color: #606266">请上传 Kindle 笔记文件</h3>
-        <el-upload class="upload-demo" drag action="#" :multiple="false" :file-list="fileList" :http-request="parse"
-          :on-change="uploadChange" :on-exceed="exceed" :limit="1">
-          <i class="el-icon-upload"></i>
-          <div class="el-upload__text">将 CSV 或 HTML 文件拖到此处，或<em>点击上传</em></div>
-          <!-- <div class="el-upload__tip" slot="tip">请使用手机导出HTML格式的笔记文件</div> -->
-        </el-upload>
-        <div class="help">
-          <ul style="list-style: none;">
-            <li><el-link type="info" href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd" target="_blank">1. 怎么获取笔记文件？</el-link></li>
-            <li><el-link type="info" href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198220&idx=1&sn=5d0fecf4d3a4ab1469724292dad9797d&chksm=be5734058920bd13ac17f149d7a54dd01b17a066d70f55a813ebb338075b6837f6c6605b255b&token=1351484622&lang=zh_CN#rd" target="_blank">2. 想了解它诞生的故事？</el-link></li>
-            <li><el-link type="info" href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198238&idx=1&sn=31d5111d4a3bdc65ab1283612f1427f1&chksm=be5734178920bd0117a068f2c73897fd05c37bddba78efd62ccdf2bb6df5a0386172a4499143&token=677060446&lang=zh_CN#rd" target="_blank">3. 想了解它的实现过程？</el-link></li>
-          </ul>
+    <div class="aside">
+      <h2 style="color: #606266">kindle2flomo</h2>
+      <el-upload v-if="!show" class="upload-demo" drag action="#" :multiple="false" :file-list="fileList"
+        :http-request="parse" :on-change="uploadChange" :on-exceed="exceed" :limit="1" accept=".csv, .html">
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将 CSV 或 HTML 文件拖到此处，或<em>点击上传</em></div>
+        <!-- <div class="el-upload__tip" slot="tip">请使用手机导出HTML格式的笔记文件</div> -->
+      </el-upload>
+
+      <div v-if="show" class="form">
+        <!-- <el-divider><i class="el-icon-upload" style="color: #909399"> 导入 FLOMO</i></el-divider> -->
+        <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
+          <el-form-item label="Flomo 专属 API（静态页面，不保存信息）" prop="api">
+            <el-input v-model="form.api" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
+          </el-form-item>
+          <el-form-item label="自定义分隔符（标注与笔记之间）" prop="delimiter">
+            <el-input v-model="form.delimiter" placeholder="默认空一行"></el-input>
+          </el-form-item>
+          <el-form-item label="是否顺序查看笔记（倒序插入）" prop="is_order">
+            <el-switch v-model="form.is_order" active-text="顺序" inactive-text="随机" :change="switchChange"></el-switch>
+            <p style="color: #606266">* 选择顺序查看，插入时间较长，平均每秒1条</p>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="danger" :disabled="form.is_disabled" :loading="form.is_loading" @click="post('form')">导入
+              Flomo</el-button>
+          </el-form-item>
+        </el-form>
+        <el-alert v-if="showUploadMessage" title="导入成功" type="success" :description="uploadMessage" show-icon>
+        </el-alert>
+      </div>
+      <div class="help">
+        <el-divider><i class="el-icon-question" style="color: #909399"> 帮助</i></el-divider>
+        <ul style="list-style: none;">
+          <li>
+            <el-link type="info"
+              href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd"
+              target="_blank">1. 怎么获取笔记文件？</el-link>
+          </li>
+          <li>
+            <el-link type="info"
+              href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198220&idx=1&sn=5d0fecf4d3a4ab1469724292dad9797d&chksm=be5734058920bd13ac17f149d7a54dd01b17a066d70f55a813ebb338075b6837f6c6605b255b&token=1351484622&lang=zh_CN#rd"
+              target="_blank">2. 想了解它诞生的故事？</el-link>
+          </li>
+          <li>
+            <el-link type="info"
+              href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198238&idx=1&sn=31d5111d4a3bdc65ab1283612f1427f1&chksm=be5734178920bd0117a068f2c73897fd05c37bddba78efd62ccdf2bb6df5a0386172a4499143&token=677060446&lang=zh_CN#rd"
+              target="_blank">3. 想了解它的实现过程？</el-link>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="main">
+      <h3 v-if="result.length" style="color: #606266">共 {{ result.length }} 条笔记<span style="font-size: 0.7em">（Flomo
+          每天只支持上传 100 条 Memo）</span></h3>
+      <el-card v-for="item in result" :key="index" class="selected: is_selected" shadow="always" @click="selectCard(index)">
+        <el-tag style="padding:0 4px">{{ item.tags }}</el-tag>
+        <p>{{ item.highlight }}</p>
+        <div v-if="item.note">
+          <p>{{ form.delimiter }}</p>
+          <p type="info">笔记：{{ item.note }}</p>
         </div>
-        <div v-if="show">
-          <el-divider><i class="el-icon-upload" style="color: #909399"> 导入 FLOMO</i></el-divider>
-          <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px"
-            class="demo-ruleForm">
-            <el-form-item label="Flomo 专属 API（静态页面，不保存信息）" prop="api">
-              <el-input v-model="form.api" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
-            </el-form-item>
-            <el-form-item label="自定义分隔符（标注与笔记之间）" prop="delimiter">
-              <el-input v-model="form.delimiter" placeholder="默认空一行"></el-input>
-            </el-form-item>
-            <el-form-item label="是否顺序查看笔记（倒序插入）" prop="is_order">
-              <el-switch v-model="form.is_order" active-text="顺序" inactive-text="随机" :change="switchChange"></el-switch>
-              <p style="color: #606266">* 选择顺序查看，插入时间较长，平均每秒1条</p>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="danger" :disabled="form.is_disabled" :loading="form.is_loading" @click="post('form')">导入
-                Flomo</el-button>
-            </el-form-item>
-          </el-form>
-          <el-alert v-if="showUploadMessage" title="导入成功" type="success" :description="uploadMessage" show-icon>
-          </el-alert>
-        </div>
-      </el-col>
-      <el-col :span="16">
-        <h3 v-if="result.length" style="color: #606266">共 {{ result.length }} 条笔记<span style="font-size: 0.7em">（Flomo 每天只支持上传 100 条 Memo）</span></h3>
-        <el-card v-for="item in result" shadow="always" style="margin-bottom: 30px; font-size: 14px; color: #606266">
-          <el-tag>{{ item.tags }}</el-tag>
-          <p>{{ item.highlight }}</p>
-          <div v-if="item.note">
-            <span>{{ form.delimiter }}</span>
-            <p type="info">笔记：{{ item.note }}</p>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+      </el-card>
+    </div>
   </div>
 </body>
 <!-- import Vue before Element -->
@@ -98,7 +136,8 @@
         api: '',
         is_order: false,
         is_disabled: false,
-        is_loading: false
+        is_loading: false,
+        is_selected: false
       },
       rule: {
         delimiter: [
@@ -114,6 +153,10 @@
       showUploadMessage: false
     },
     methods: {
+      selectCard(index){
+        console.log(index)
+        this.is_selected = !this.is_selected
+      },
       switchChange(r) {
         console.log(r)
       },
