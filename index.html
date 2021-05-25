@@ -9,6 +9,21 @@
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <title>Kindle to Flomo</title>
   <style>
+    body {
+      background-color: #FAFAFA;
+    }
+
+    .el-divider__text {
+      background-color: #FAFAFA;
+    }
+
+    .el-tag {
+      padding: 0 4px;
+      line-height: 24px;
+      height: 24px;
+      margin-bottom: 3px
+    }
+
     #app {
       display: flex;
       justify-content: center;
@@ -38,16 +53,19 @@
       margin: 0;
       min-height: 20px;
     }
+
     .main .el-card {
       margin-bottom: 10px;
       font-size: 14px;
       color: #606266
     }
-    .main .el-card .el-card__body{
+
+    .main .el-card .el-card__body {
       padding: 15px;
     }
-    .selected{
-      border: 2px solid #5783F7;
+
+    .selected {
+      border: 1px solid #5783F7;
     }
   </style>
 </head>
@@ -56,15 +74,15 @@
   <div id="app">
     <div class="aside">
       <h2 style="color: #606266">kindle2flomo</h2>
-      <el-upload v-if="!show" class="upload-demo" drag action="#" :multiple="false" :file-list="fileList"
-        :http-request="parse" :on-change="uploadChange" :on-exceed="exceed" :limit="1" accept=".csv, .html">
+      <el-upload class="upload-demo" drag action="#" :multiple="false" :file-list="fileList" :http-request="parse"
+        :on-change="uploadChange" :on-exceed="exceed" :limit="1" accept=".csv, .html">
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">将 CSV 或 HTML 文件拖到此处，或<em>点击上传</em></div>
         <!-- <div class="el-upload__tip" slot="tip">请使用手机导出HTML格式的笔记文件</div> -->
       </el-upload>
 
       <div v-if="show" class="form">
-        <!-- <el-divider><i class="el-icon-upload" style="color: #909399"> 导入 FLOMO</i></el-divider> -->
+        <el-divider><i class="el-icon-upload" style="color: #909399"> 导入 FLOMO</i></el-divider>
         <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
           <el-form-item label="Flomo 专属 API（静态页面，不保存信息）" prop="api">
             <el-input v-model="form.api" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
@@ -72,13 +90,18 @@
           <el-form-item label="自定义分隔符（标注与笔记之间）" prop="delimiter">
             <el-input v-model="form.delimiter" placeholder="默认空一行"></el-input>
           </el-form-item>
-          <el-form-item label="是否顺序查看笔记（倒序插入）" prop="is_order">
-            <el-switch v-model="form.is_order" active-text="顺序" inactive-text="随机" :change="switchChange"></el-switch>
-            <p style="color: #606266">* 选择顺序查看，插入时间较长，平均每秒1条</p>
+          <el-form-item label="是否顺序查看笔记" prop="is_order">
+            <el-switch v-model="form.is_order" active-text="顺序" inactive-text="随机" change="switchChange"></el-switch>
+            <!-- <span style="color: #606266">* 选择顺序查看，插入时间较长，平均每秒1条</span> -->
+            <el-popover placement="top-start" title="" width="200" trigger="hover"
+              content="实现在flomo上顺序查看，需倒序插入笔记，每条笔记插入时间相隔 1s">
+              <i style="color: #606266" class="el-icon-question" slot="reference"></i>
+            </el-popover>
           </el-form-item>
           <el-form-item>
             <el-button type="danger" :disabled="form.is_disabled" :loading="form.is_loading" @click="post('form')">导入
               Flomo</el-button>
+            <!-- <el-link type="primary" href="javascript:location.reload();"> 换本书导入</el-link> -->
           </el-form-item>
         </el-form>
         <el-alert v-if="showUploadMessage" title="导入成功" type="success" :description="uploadMessage" show-icon>
@@ -106,16 +129,26 @@
       </div>
     </div>
     <div class="main">
-      <h3 v-if="result.length" style="color: #606266">共 {{ result.length }} 条笔记<span style="font-size: 0.7em">（Flomo
-          每天只支持上传 100 条 Memo）</span></h3>
-      <el-card v-for="item in result" :key="index" class="selected: is_selected" shadow="always" @click="selectCard(index)">
-        <el-tag style="padding:0 4px">{{ item.tags }}</el-tag>
-        <p>{{ item.highlight }}</p>
-        <div v-if="item.note">
-          <p>{{ form.delimiter }}</p>
-          <p type="info">笔记：{{ item.note }}</p>
+      <h3 v-if="result.length" style="color: #606266">共 {{ result.length }} 条笔记，已选 {{ count }} 条
+        <el-popover placement="top-start" title="" width="250" trigger="hover" content="Flomo 每天只支持上传 100 条 Memo">
+          <i style="color: #606266" class="el-icon-question" slot="reference"></i>
+        </el-popover>
+        <div class="op" style="float: right;">
+          <el-link type="primary" @click.native="selectAllCard">全选</el-link>
+          <el-link type="primary" @click.native="cancelselectAllCard">全不选</el-link>
         </div>
-      </el-card>
+      </h3>
+      <div v-for="(item,index) in result" :key="index">
+        <el-card shadow="hover" @click.native="clickCard(index)" :class="{ selected: item.selected }">
+          <el-tag>{{ item.tags }}</el-tag>
+          <p>{{ item.highlight }}</p>
+          <div v-if="item.note">
+            <p>{{ form.delimiter }}</p>
+            <p type="info">笔记：{{ item.note }}</p>
+          </div>
+        </el-card>
+      </div>
+
     </div>
   </div>
 </body>
@@ -149,16 +182,45 @@
         is_order: false
       },
       result: [],
+      count: 0,
       show: false,
       showUploadMessage: false
     },
     methods: {
-      selectCard(index){
-        console.log(index)
-        this.is_selected = !this.is_selected
+      clickCard(index) {
+        memo_arr = this.result
+        the_memo = memo_arr[index]
+        the_memo.selected = !the_memo.selected
+        memo_arr.splice(index, 1, the_memo)
+        this.result = memo_arr
+        if(the_memo.selected){
+          this.count ++;
+        }else{
+          this.count --;
+        }
+      },
+      selectAllCard() {
+        memo_arr = this.result
+        memo_arr_new = []
+        for (var i = 0; i < memo_arr.length; i++) {
+          memo_arr[i].selected = true
+          memo_arr_new.push(memo_arr[i])
+        }
+        this.result = memo_arr_new
+        this.count = memo_arr_new.length;
+      },
+      cancelselectAllCard() {
+        memo_arr = this.result
+        memo_arr_new = []
+        for (var i = 0; i < memo_arr.length; i++) {
+          memo_arr[i].selected = false
+          memo_arr_new.push(memo_arr[i])
+        }
+        this.result = memo_arr_new;
+        this.count = 0;
       },
       switchChange(r) {
-        console.log(r)
+        console.log(11)
       },
       uploadChange: function (file, fileList) {
         this.form.file = fileList[0].raw;
@@ -190,11 +252,17 @@
             if (this.result.length > 100) {
               return this.$message.error('Flomo API 每天只支持 100 条');
             }
+            var data = [];
+            for(var i = 0 ; i < this.result.length; i++){
+              if(this.result[i].selected){
+                data.push(this.result[i])
+              }
+            }
             let formData = new FormData();
             formData.append("api", this.form.api);
             formData.append("delimiter", this.form.delimiter);
             formData.append("is_order", this.form.is_order);
-            formData.append("data", JSON.stringify(this.result));
+            formData.append("data", JSON.stringify(data));
             this.form.is_loading = true;
             axios.post('http://kindle2flomo.90byte.com/post', formData, {
               "Content-Type": "multipart/form-data"
