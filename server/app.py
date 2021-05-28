@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, url_for, jsonify
 from flask_cors import CORS
 import os
 import json
+import time
 from parser import parse_csv_file, parse_html_file
 from poster import post_all_to_flomo, format_data_to_json
 
@@ -26,9 +27,10 @@ def index():
         print(request.files)
         file = request.files.get('file')
         if file and allowed_file(file.filename):
-            filename = file.filename
-            ext = filename.rsplit('.', 1)[1]
-            file_save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            filename = file.filename.rsplit('.', 1)[0]
+            ext = file.filename.rsplit('.', 1)[1]
+            new_filename = filename + '_' + str(time.time()) + '.' + ext
+            file_save_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
             file.save(file_save_path)
             if ext == 'html':
                 result = parse_html_file(file_save_path)

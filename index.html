@@ -54,6 +54,14 @@
       min-height: 20px;
     }
 
+    .main .main-header {
+      display: block;
+      margin-bottom: 15px;
+      padding: 0 10px;
+      font-size: 1em;
+      font-weight: bold;
+    }
+
     .main .el-card {
       margin-bottom: 10px;
       font-size: 14px;
@@ -73,12 +81,12 @@
 <body>
   <div id="app">
     <div class="aside">
-      <h2 style="color: #606266">kindle2flomo</h2>
-      <el-upload class="upload-demo" drag action="#" :multiple="false" :file-list="fileList" :http-request="parse"
-        :on-change="uploadChange" :on-exceed="exceed" :limit="1" accept=".csv, .html">
+      <h1 style="color: #606266">kindle2flomo</h1>
+      <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList" :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove"
+        :on-change="uploadChange" :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将 CSV 或 HTML 文件拖到此处，或<em>点击上传</em></div>
-        <!-- <div class="el-upload__tip" slot="tip">请使用手机导出HTML格式的笔记文件</div> -->
+        <div class="el-upload__text">将 CSV 或 HTML 文件拖到此处，帮你解析</div>
+        <div class="el-upload__tip" slot="tip">支持一次上传 10000 本书的笔记，就怕你没有</div>
       </el-upload>
 
       <div v-if="show" class="form">
@@ -128,8 +136,10 @@
         </ul>
       </div>
     </div>
-    <div class="main">
-      <h3 v-if="result.length" style="color: #606266">共 {{ result.length }} 条笔记，已选 {{ count }} 条
+    <div v-if="result.length" class="main">
+      <h2 style="color: #606266">《{{ book_title }}》</h2>
+      <div class="main-header" style="color: #606266">
+        <span>共 {{ result.length }} 条笔记，已选 {{ count }} 条</span>
         <el-popover placement="top-start" title="" width="250" trigger="hover" content="Flomo 每天只支持上传 100 条 Memo">
           <i style="color: #606266" class="el-icon-question" slot="reference"></i>
         </el-popover>
@@ -137,7 +147,7 @@
           <el-link type="primary" @click.native="selectAllCard">全选</el-link>
           <el-link type="primary" @click.native="cancelselectAllCard">全不选</el-link>
         </div>
-      </h3>
+      </div>
       <div v-for="(item,index) in result" :key="index">
         <el-card shadow="hover" @click.native="clickCard(index)" :class="{ selected: item.selected }">
           <el-tag>{{ item.tags }}</el-tag>
@@ -148,7 +158,6 @@
           </div>
         </el-card>
       </div>
-
     </div>
   </div>
 </body>
@@ -160,7 +169,9 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 <script>
-  new Vue({
+  // let url = 'http://kindle2flomo.90byte.com'
+  let url = 'http://127.0.0.1:5000'
+  let app = new Vue({
     el: '#app',
     data: {
       fileList: [],
@@ -181,6 +192,7 @@
         ],
         is_order: false
       },
+      book_title: '',
       result: [],
       count: 0,
       show: false,
@@ -219,24 +231,40 @@
         this.result = memo_arr_new;
         this.count = 0;
       },
-      switchChange(r) {
-        console.log(11)
+      preview(file) {
+        this.count = 0
+        this.parse(file)
       },
-      uploadChange: function (file, fileList) {
-        this.form.file = fileList[0].raw;
+      uploadSuccess(res, file, fileList){
+        console.log('success')
+        // this.form.file = fileList[0].raw;
       },
-      exceed: function () {
-        this.$message.error('一次只支持上传 1 个文件');
+      uploadChange(file, fileList) {
+        this.fileList.push(file.raw)
       },
-      parse(formName) {
-        if (this.form.file) {
+      exceed() {
+        this.$message.error('一次只支持上传 10000 个文件');
+      },
+      beforeRemove(){
+        this.$message.error('一万本还不够吗')
+        return false
+      },
+      handleRequest(){
+        var length = this.fileList.length;
+        if(length == 1){
+          this.parse(this.fileList[0])
+        }
+      },
+      parse(file) {
+        if (file) {
           let formData = new FormData();
-          formData.append("file", this.form.file);
-          axios.post('http://kindle2flomo.90byte.com/parse', formData, {
+          formData.append("file", file);
+          axios.post(url + '/parse', formData, {
             "Content-Type": "multipart/form-data"
           })
             .then(response => {
-              this.result = response.data
+              this.book_title = response.data.book_title
+              this.result = response.data.result
               this.show = true
             })
             .catch(error => {
@@ -264,7 +292,7 @@
             formData.append("is_order", this.form.is_order);
             formData.append("data", JSON.stringify(data));
             this.form.is_loading = true;
-            axios.post('http://kindle2flomo.90byte.com/post', formData, {
+            axios.post(url + '/post', formData, {
               "Content-Type": "multipart/form-data"
             })
               .then(response => {

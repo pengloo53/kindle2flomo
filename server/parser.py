@@ -38,7 +38,10 @@ def parse_csv_file(file_path):
                 the_result = result_json.pop()
                 the_result['note'] = note
                 result_json.append(the_result)
-        return result_json
+        return {
+            "book_title": title.strip(),
+            "result": result_json
+        }
 
 
 def parse_html_file(file_path):
@@ -86,4 +89,7 @@ def parse_html_file(file_path):
                 the_result = result_json.pop()
                 the_result['note'] = note
                 result_json.append(the_result)
-        return result_json
+        return {
+            "book_title": book_title.strip(),
+            "result": result_json
+        }
