@@ -30,13 +30,13 @@
     }
 
     .aside {
-      max-width: 240px;
-      margin: 20px 0;
+      max-width: 280px;
+      margin: 20px 0 0 30px;
     }
 
     .main {
-      margin: 20px;
-      max-width: 600px;
+      margin: 20px 30px;
+      max-width: 1600px;
     }
 
     .el-upload-list__item-name [class^=el-icon] {
@@ -61,12 +61,31 @@
       font-size: 1em;
       font-weight: bold;
     }
-
+    .main .main-content{
+      display: flex;
+      flex-flow: column wrap;
+      align-content: space-between;
+      height: 30000px;
+    }
+    /* 强制换列 */
+    .main .main-content::before,
+    .main .main-content::after {
+      content: "";
+      flex-basis: 100%;
+      width: 0;
+      order: 2;
+    }
     .main .el-card {
-      margin-bottom: 10px;
+      width: 32%;
+      margin-bottom: 2%;
       font-size: 14px;
       color: #606266
     }
+
+    /* 将内容块重排为3列 */
+    .el-card:nth-child(3n+1) { order: 1; }
+    .el-card:nth-child(3n+2) { order: 2; }
+    .el-card:nth-child(3n)   { order: 3; }
 
     .main .el-card .el-card__body {
       padding: 15px;
@@ -77,12 +96,12 @@
     }
 
     .el-upload-dragger {
-      width: 240px;
-      height: 120px;
+      width: 280px;
+      height: 140px;
     }
     .el-upload-dragger .el-icon-upload {
       margin: 20px 0 10px;
-      font-size: 50px;
+      font-size: 60px;
     }
     
   </style>
@@ -130,13 +149,8 @@
         </el-alert>
       </div>
       <div class="help">
-        <el-divider><i class="el-icon-question" style="color: #909399"> 帮助</i></el-divider>
+        <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 故事</i></el-divider>
         <ul style="list-style: none;">
-          <!-- <li>
-            <el-link type="info"
-              href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd"
-              target="_blank">1. 怎么获取笔记文件？</el-link>
-          </li> -->
           <li>
             <el-link type="info"
               href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198220&idx=1&sn=5d0fecf4d3a4ab1469724292dad9797d&chksm=be5734058920bd13ac17f149d7a54dd01b17a066d70f55a813ebb338075b6837f6c6605b255b&token=1351484622&lang=zh_CN#rd"
@@ -162,8 +176,8 @@
           <el-link type="primary" @click.native="cancelselectAllCard">全不选</el-link>
         </div>
       </div>
-      <div v-for="(item,index) in result" :key="index">
-        <el-card shadow="hover" @click.native="clickCard(index)" :class="{ selected: item.selected }">
+      <div class="main-content">
+        <el-card shadow="hover" v-for="(item,index) in result" :key="index" @click.native="clickCard(index)" :class="{ selected: item.selected }">
           <el-tag v-if="form.tag">{{ form.tag }}</el-tag>
           <p>{{ item.highlight }}</p>
           <div v-if="item.note">
@@ -218,6 +232,45 @@
       },
       book_title: '示例：产品方法论',
       result: [{
+        "highlight": "一个好产品要有三个属性：（对用户）有效用，（企业）有收益，可持续。只有可持续，才能让企业长期赚钱；只有可持续，才能长期为用户创造更多价值。而可持续就涉及交易模型设计问题。只有产业链上各方在创造价值和利益分配方面公平合理，有竞争性，产品才可持续。"
+      }, {
+        "highlight": "美国第一个诺贝尔经济学奖获得者萨缪尔森有个著名的幸福公式：幸福＝效用÷欲望。可见幸福与效用及欲望相关。人主观感知的效用越大（欲望满足程度越高），幸福度越高；效用不变，降低自己的欲望，也能提升幸福感，比如有些宗教教义或心灵鸡汤就是通过降低个人欲望的方式让人提升幸福感。",
+        "note": "幸福公式"
+      },
+      {
+        "highlight": "用户感知到的价值才是用户价值。用户价值（即主观效用）具备认知依存、情境依存、经验反馈演化三个特性。",
+        "note": "用户感知到的价值才是用户价值。"
+      }, {
+        "highlight": "我们认为用户价值和企业商业价值的关系是：企业以产品为媒介，与用户进行价值交换，达成创造商业价值的目的。"
+      }, {
+        "highlight": "企业能做的，是在给定条件下，选择满足哪些用户需求，创造哪些用户价值，以更多地促成交换，让企业有最高的边际收益和ROI（投资回报率）。一句话总结就是，创造“有利可图”的用户价值。"
+      },{
+        "highlight": "一个好产品要有三个属性：（对用户）有效用，（企业）有收益，可持续。只有可持续，才能让企业长期赚钱；只有可持续，才能长期为用户创造更多价值。而可持续就涉及交易模型设计问题。只有产业链上各方在创造价值和利益分配方面公平合理，有竞争性，产品才可持续。"
+      }, {
+        "highlight": "美国第一个诺贝尔经济学奖获得者萨缪尔森有个著名的幸福公式：幸福＝效用÷欲望。可见幸福与效用及欲望相关。人主观感知的效用越大（欲望满足程度越高），幸福度越高；效用不变，降低自己的欲望，也能提升幸福感，比如有些宗教教义或心灵鸡汤就是通过降低个人欲望的方式让人提升幸福感。",
+        "note": "幸福公式"
+      },
+      {
+        "highlight": "用户感知到的价值才是用户价值。用户价值（即主观效用）具备认知依存、情境依存、经验反馈演化三个特性。",
+        "note": "用户感知到的价值才是用户价值。"
+      }, {
+        "highlight": "我们认为用户价值和企业商业价值的关系是：企业以产品为媒介，与用户进行价值交换，达成创造商业价值的目的。"
+      }, {
+        "highlight": "企业能做的，是在给定条件下，选择满足哪些用户需求，创造哪些用户价值，以更多地促成交换，让企业有最高的边际收益和ROI（投资回报率）。一句话总结就是，创造“有利可图”的用户价值。"
+      },{
+        "highlight": "一个好产品要有三个属性：（对用户）有效用，（企业）有收益，可持续。只有可持续，才能让企业长期赚钱；只有可持续，才能长期为用户创造更多价值。而可持续就涉及交易模型设计问题。只有产业链上各方在创造价值和利益分配方面公平合理，有竞争性，产品才可持续。"
+      }, {
+        "highlight": "美国第一个诺贝尔经济学奖获得者萨缪尔森有个著名的幸福公式：幸福＝效用÷欲望。可见幸福与效用及欲望相关。人主观感知的效用越大（欲望满足程度越高），幸福度越高；效用不变，降低自己的欲望，也能提升幸福感，比如有些宗教教义或心灵鸡汤就是通过降低个人欲望的方式让人提升幸福感。",
+        "note": "幸福公式"
+      },
+      {
+        "highlight": "用户感知到的价值才是用户价值。用户价值（即主观效用）具备认知依存、情境依存、经验反馈演化三个特性。",
+        "note": "用户感知到的价值才是用户价值。"
+      }, {
+        "highlight": "我们认为用户价值和企业商业价值的关系是：企业以产品为媒介，与用户进行价值交换，达成创造商业价值的目的。"
+      }, {
+        "highlight": "企业能做的，是在给定条件下，选择满足哪些用户需求，创造哪些用户价值，以更多地促成交换，让企业有最高的边际收益和ROI（投资回报率）。一句话总结就是，创造“有利可图”的用户价值。"
+      },{
         "highlight": "一个好产品要有三个属性：（对用户）有效用，（企业）有收益，可持续。只有可持续，才能让企业长期赚钱；只有可持续，才能长期为用户创造更多价值。而可持续就涉及交易模型设计问题。只有产业链上各方在创造价值和利益分配方面公平合理，有竞争性，产品才可持续。"
       }, {
         "highlight": "美国第一个诺贝尔经济学奖获得者萨缪尔森有个著名的幸福公式：幸福＝效用÷欲望。可见幸福与效用及欲望相关。人主观感知的效用越大（欲望满足程度越高），幸福度越高；效用不变，降低自己的欲望，也能提升幸福感，比如有些宗教教义或心灵鸡汤就是通过降低个人欲望的方式让人提升幸福感。",
