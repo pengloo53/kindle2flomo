@@ -30,8 +30,8 @@
     }
 
     .aside {
-      max-width: 360px;
-      margin: 20px;
+      max-width: 240px;
+      margin: 20px 0;
     }
 
     .main {
@@ -75,28 +75,41 @@
     .selected {
       border: 1px solid #5783F7;
     }
+
+    .el-upload-dragger {
+      width: 240px;
+      height: 120px;
+    }
+    .el-upload-dragger .el-icon-upload {
+      margin: 20px 0 10px;
+      font-size: 50px;
+    }
+    
   </style>
 </head>
 
 <body>
   <div id="app">
     <div class="aside">
-      <h1 style="color: #606266">kindle2flomo</h1>
-      <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList" :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove"
-        :on-change="uploadChange" :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
+      <h2 style="color: #606266">kindle2flomo</h2>
+      <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
+        :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove" :on-change="uploadChange"
+        :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将 CSV 或 HTML 文件拖到此处，帮你解析</div>
-        <div class="el-upload__tip" slot="tip">支持一次上传 10000 本书的笔记，就怕你没有</div>
+        <div class="el-upload__text">上传 Kindle 笔记</div>
+        <div class="el-upload__tip" slot="tip"><el-link type="info"
+          href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd"
+          target="_blank">不知道怎么获取笔记？</el-link></div>
       </el-upload>
 
       <div v-if="show" class="form">
-        <el-divider><i class="el-icon-upload" style="color: #909399"> 导入 FLOMO</i></el-divider>
+        <el-divider><i class="el-icon-s-tools" style="color: #909399"> 自定义</i></el-divider>
         <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
-          <el-form-item label="Flomo 专属 API（静态页面，不保存信息）" prop="api">
-            <el-input v-model="form.api" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
+          <el-form-item label="标签（MEMO 标签）" prop="tag">
+            <el-input v-model="form.tag" placeholder="别忘加 # 号" :clearable="true"></el-input>
           </el-form-item>
-          <el-form-item label="自定义分隔符（标注与笔记之间）" prop="delimiter">
-            <el-input v-model="form.delimiter" placeholder="默认空一行"></el-input>
+          <el-form-item label="分隔符（标注与笔记之间）" prop="delimiter">
+            <el-input v-model="form.delimiter" placeholder="默认空一行" :clearable="true"></el-input>
           </el-form-item>
           <el-form-item label="是否顺序查看笔记" prop="is_order">
             <el-switch v-model="form.is_order" active-text="顺序" inactive-text="随机" change="switchChange"></el-switch>
@@ -107,8 +120,9 @@
             </el-popover>
           </el-form-item>
           <el-form-item>
-            <el-button type="danger" :disabled="form.is_disabled" :loading="form.is_loading" @click="post('form')">导入
+            <el-button type="danger" size="small" :disabled="form.is_disabled" :loading="form.is_loading" @click="post('form')">批量导入
               Flomo</el-button>
+            <el-button type="text" @click="dialogVisible = true">设置 API</el-button>
             <!-- <el-link type="primary" href="javascript:location.reload();"> 换本书导入</el-link> -->
           </el-form-item>
         </el-form>
@@ -118,20 +132,20 @@
       <div class="help">
         <el-divider><i class="el-icon-question" style="color: #909399"> 帮助</i></el-divider>
         <ul style="list-style: none;">
-          <li>
+          <!-- <li>
             <el-link type="info"
               href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd"
               target="_blank">1. 怎么获取笔记文件？</el-link>
-          </li>
+          </li> -->
           <li>
             <el-link type="info"
               href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198220&idx=1&sn=5d0fecf4d3a4ab1469724292dad9797d&chksm=be5734058920bd13ac17f149d7a54dd01b17a066d70f55a813ebb338075b6837f6c6605b255b&token=1351484622&lang=zh_CN#rd"
-              target="_blank">2. 想了解它诞生的故事？</el-link>
+              target="_blank">1. 想了解它诞生的故事？</el-link>
           </li>
           <li>
             <el-link type="info"
               href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198238&idx=1&sn=31d5111d4a3bdc65ab1283612f1427f1&chksm=be5734178920bd0117a068f2c73897fd05c37bddba78efd62ccdf2bb6df5a0386172a4499143&token=677060446&lang=zh_CN#rd"
-              target="_blank">3. 想了解它的实现过程？</el-link>
+              target="_blank">2. 想了解它的实现过程？</el-link>
           </li>
         </ul>
       </div>
@@ -150,7 +164,7 @@
       </div>
       <div v-for="(item,index) in result" :key="index">
         <el-card shadow="hover" @click.native="clickCard(index)" :class="{ selected: item.selected }">
-          <el-tag>{{ item.tags }}</el-tag>
+          <el-tag v-if="form.tag">{{ form.tag }}</el-tag>
           <p>{{ item.highlight }}</p>
           <div v-if="item.note">
             <p>{{ form.delimiter }}</p>
@@ -160,6 +174,18 @@
       </div>
     </div>
   </div>
+  <!-- 对话框填 API -->
+  <el-dialog title="请填写 Flomo 专属 API" :visible.sync="dialogVisible" :before-close="apiSetting">
+    <el-form :model="form2">
+      <el-form-item label="API（本地存储）">
+        <el-input v-model="api" autocomplete="off" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="dialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+    </div>
+  </el-dialog>
 </body>
 <!-- import Vue before Element -->
 <script src="https://unpkg.com/vue/dist/vue.js"></script>
@@ -175,9 +201,10 @@
     el: '#app',
     data: {
       fileList: [],
+      api: '',
       form: {
-        delimiter: '',
-        api: '',
+        tag: '#kindle/《产品方法论》',
+        delimiter: '>>>>>>>>>>>>>>>',
         is_order: false,
         is_disabled: false,
         is_loading: false,
@@ -187,28 +214,46 @@
         delimiter: [
           { min: 1, max: 30, message: '长度在 1 到 30 个字符', trigger: 'blur' }
         ],
-        api: [
-          { required: true, message: '请填写 Flomo 的 API 信息', trigger: 'blur' }
-        ],
         is_order: false
       },
-      book_title: '',
-      result: [],
+      book_title: '示例：产品方法论',
+      result: [{
+        "highlight": "一个好产品要有三个属性：（对用户）有效用，（企业）有收益，可持续。只有可持续，才能让企业长期赚钱；只有可持续，才能长期为用户创造更多价值。而可持续就涉及交易模型设计问题。只有产业链上各方在创造价值和利益分配方面公平合理，有竞争性，产品才可持续。"
+      }, {
+        "highlight": "美国第一个诺贝尔经济学奖获得者萨缪尔森有个著名的幸福公式：幸福＝效用÷欲望。可见幸福与效用及欲望相关。人主观感知的效用越大（欲望满足程度越高），幸福度越高；效用不变，降低自己的欲望，也能提升幸福感，比如有些宗教教义或心灵鸡汤就是通过降低个人欲望的方式让人提升幸福感。",
+        "note": "幸福公式"
+      },
+      {
+        "highlight": "用户感知到的价值才是用户价值。用户价值（即主观效用）具备认知依存、情境依存、经验反馈演化三个特性。",
+        "note": "用户感知到的价值才是用户价值。"
+      }, {
+        "highlight": "我们认为用户价值和企业商业价值的关系是：企业以产品为媒介，与用户进行价值交换，达成创造商业价值的目的。"
+      }, {
+        "highlight": "企业能做的，是在给定条件下，选择满足哪些用户需求，创造哪些用户价值，以更多地促成交换，让企业有最高的边际收益和ROI（投资回报率）。一句话总结就是，创造“有利可图”的用户价值。"
+      }],
       count: 0,
-      show: false,
-      showUploadMessage: false
+      show: true,
+      showUploadMessage: false,
+      dialogVisible: false
     },
     methods: {
+      apiSetting(done){
+        this.$confirm('确认关闭？')
+          .then(_ => {
+            done();
+          })
+          .catch(_ => {});
+      },
       clickCard(index) {
         memo_arr = this.result
         the_memo = memo_arr[index]
         the_memo.selected = !the_memo.selected
         memo_arr.splice(index, 1, the_memo)
         this.result = memo_arr
-        if(the_memo.selected){
-          this.count ++;
-        }else{
-          this.count --;
+        if (the_memo.selected) {
+          this.count++;
+        } else {
+          this.count--;
         }
       },
       selectAllCard() {
@@ -235,7 +280,7 @@
         this.count = 0
         this.parse(file)
       },
-      uploadSuccess(res, file, fileList){
+      uploadSuccess(res, file, fileList) {
         console.log('success')
         // this.form.file = fileList[0].raw;
       },
@@ -245,13 +290,13 @@
       exceed() {
         this.$message.error('一次只支持上传 10000 个文件');
       },
-      beforeRemove(){
+      beforeRemove() {
         this.$message.error('一万本还不够吗')
         return false
       },
-      handleRequest(){
+      handleRequest() {
         var length = this.fileList.length;
-        if(length == 1){
+        if (length == 1) {
           this.parse(this.fileList[0])
         }
       },
@@ -264,6 +309,7 @@
           })
             .then(response => {
               this.book_title = response.data.book_title
+              this.form.tag = "#kindle/《" + response.data.book_title + "》"
               this.result = response.data.result
               this.show = true
             })
@@ -275,19 +321,24 @@
         }
       },
       post(formName) {
+        // api 校验
+        if(!this.api){
+          return this.$message.error('请设置 Flomo API');
+        }
         this.$refs[formName].validate((valid) => {
           if (valid) {
             if (this.result.length > 100) {
               return this.$message.error('Flomo API 每天只支持 100 条');
             }
             var data = [];
-            for(var i = 0 ; i < this.result.length; i++){
-              if(this.result[i].selected){
+            for (var i = 0; i < this.result.length; i++) {
+              if (this.result[i].selected) {
                 data.push(this.result[i])
               }
             }
             let formData = new FormData();
-            formData.append("api", this.form.api);
+            formData.append("api", this.api);
+            formData.append("tag", this.form.tag);
             formData.append("delimiter", this.form.delimiter);
             formData.append("is_order", this.form.is_order);
             formData.append("data", JSON.stringify(data));

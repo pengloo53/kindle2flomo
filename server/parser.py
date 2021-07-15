@@ -28,9 +28,7 @@ def parse_csv_file(file_path):
             # 取标注和笔记
             if line[1:3] == '标注':
                 highlight = line.split(',')[3][1:-2]
-                tags = '#kindle/' + title
                 result_json.append({
-                    "tags": tags,
                     "highlight": highlight
                 })
             if line[1:3] == '笔记':
@@ -79,9 +77,7 @@ def parse_html_file(file_path):
         for index, line in enumerate(result_arr):
             if line[:3] == '标注(' or line[:4] == '标注 (' or line[:4] == ' 标注(':
                 highlight = strip_space(result_arr[index+1])
-                tags = '#kindle/' + book_title.strip()
                 result_json.append({
-                    "tags": tags,
                     "highlight": highlight
                 })
             if line[:5] == '笔记 - ' or line[:5] == '备注 - ':

@@ -7,13 +7,13 @@ import time
 import requests
 
 
-def format_data_to_json(data_list, delimiter):
+def format_data_to_json(data_list, tag, delimiter):
     result_json = []
     for data in data_list:
         if "note" in data:
-            content = data["tags"] + '\n' + data["highlight"] + '\n' + delimiter + '\n笔记：' + data["note"]
+            content = tag + '\n' + data["highlight"] + '\n' + delimiter + '\n笔记：' + data["note"]
         else:
-            content = data["tags"] + '\n' + data["highlight"]
+            content = tag + '\n' + data["highlight"]
         result_json.append(content)
     return result_json
 

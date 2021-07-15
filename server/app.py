@@ -45,6 +45,7 @@ def post():
     if request.method == 'POST':
         print(request.form)
         api = request.form.get('api')
+        tag = request.form.get('tag')
         delimiter = request.form.get('delimiter')
         data = request.form.get('data') or []
         data_list = json.loads(data)
@@ -54,7 +55,7 @@ def post():
                 "code": 1,
                 "message": "Limit on the number of requests per day"
             }
-        data_json = format_data_to_json(data_list, delimiter)
+        data_json = format_data_to_json(data_list, tag, delimiter)
         is_order = request.form.get('is_order') or 'false'
         if is_order == 'false':
             is_order = False
