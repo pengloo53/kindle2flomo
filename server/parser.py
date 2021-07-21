@@ -25,10 +25,12 @@ def parse_csv_file(file_path):
                     title = line[1:]
                 else:
                     title = line[1: desc_index]
-            # 取标注和笔记
+            # 取位置标注和笔记
             if line[1:3] == '标注':
+                place = line.split(',')[1][1:-2]
                 highlight = line.split(',')[3][1:-2]
                 result_json.append({
+                    "place": place,
                     "highlight": highlight
                 })
             if line[1:3] == '笔记':
@@ -55,29 +57,42 @@ def parse_html_file(file_path):
         else:
             book_title = book_title[1:desc_index]
         # 取标注和笔记
-        # 由于 Mac 阅读软件导出的 HTML 文件结构有缺陷（缺少关闭标签），根据 Mac 导出的 HTML 不存在 div.noteHeading 的标签来区分
+        # 由于 Mac 阅读软件导出的 HTML 文件结构有缺陷（缺少关闭标签）导致解析过程出现混乱，逻辑只能随之混乱。
+        # 根据 Mac 导出的 HTML 不存在 div.noteHeading 的标签来区分
         div_noteHeading = soup.select('div.noteHeading')
         if len(div_noteHeading) == 0:
             for element in soup.body:
                 if element.name:    # 删除空字符串节点
-                    if element['class'][0] == 'bodyContainer':
-                        result_arr.append(element.h3.contents[0].string.strip())
+                    if element['class'][0] == 'bodyContainer':  # 第一个 noteHeading 莫名在 bodyContainer 下
+                        if len(element.h3.contents) == 1:
+                            result_arr.append(element.h3.contents[0].string.strip())
+                        else:
+                            result_arr.append(element.h3.contents[0].string.strip() + element.h3.contents[2].string.strip())
                     elif element['class'][0] == 'noteText':
                         result_arr.append(element.contents[0].string.strip())
                         if element.h3:
-                            result_arr.append(element.h3.contents[0].string.strip())
+                            if len(element.h3.contents) == 1:
+                                result_arr.append(element.h3.contents[0].string.strip())
+                            else:
+                                result_arr.append(element.h3.contents[0].string.strip() + element.h3.contents[2].string.strip())
         # Windows 阅读软件 和 手机导出
         else:
             div_arr = soup.select('div')
             for div in div_arr:
                 if div['class'][0] == 'noteHeading' or div['class'][0] == 'noteText':
-                    div_content = div.contents[0].string.strip()
+                    if len(div.contents) == 1:
+                        div_content = div.contents[0].string.strip()
+                    else:
+                        div_content = div.contents[0].string.strip() + div.contents[2].string.strip()
                     result_arr.append(div_content)
-        # 标注+笔记 -> flomo content
+        print(result_arr)
+        # 位置+标注+笔记
         for index, line in enumerate(result_arr):
             if line[:3] == '标注(' or line[:4] == '标注 (' or line[:4] == ' 标注(':
+                place = result_arr[index].split(') - ')[1]
                 highlight = strip_space(result_arr[index+1])
                 result_json.append({
+                    "place": place,
                     "highlight": highlight
                 })
             if line[:5] == '笔记 - ' or line[:5] == '备注 - ':
