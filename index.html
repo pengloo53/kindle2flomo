@@ -21,7 +21,6 @@
       padding: 0 4px;
       line-height: 24px;
       height: 24px;
-      margin: 3px 5px 3px 0;
     }
 
     #app {
@@ -83,6 +82,9 @@
       font-size: 14px;
       color: #606266
     }
+    .main .el-card .el-card__body{
+      padding: 10px 15px;
+    }
 
     /* 将内容块重排为3列 */
     .el-card:nth-child(3n+1) {
@@ -97,12 +99,16 @@
       order: 3;
     }
 
-    .main .el-card .el-card__body {
-      padding: 15px;
-    }
-
     .selected {
       border: 1px solid #5783F7;
+    }
+
+    .saved {
+      border: 1px solid #67C23A;
+    }
+
+    .showOp{
+      display: none;
     }
 
     .el-upload-dragger {
@@ -119,6 +125,7 @@
 
 <body>
   <div id="app">
+    <!-- aside -->
     <div class="aside">
       <h2 style="color: #606266">kindle2flomo</h2>
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
@@ -157,6 +164,7 @@
         <el-alert v-if="showUploadMessage" title="导入成功" type="success" :description="uploadMessage" show-icon>
         </el-alert>
       </div>
+      <!-- 帮助 -->
       <div class="help">
         <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 故事</i></el-divider>
         <ul style="list-style: none;">
@@ -173,6 +181,7 @@
         </ul>
       </div>
     </div>
+    <!-- result -->
     <div v-if="result.length" class="main">
       <h2 style="color: #606266">《{{ book_title }}》</h2>
       <div class="main-header" style="color: #606266">
@@ -186,23 +195,27 @@
         </div>
       </div>
       <div ref="content" class="main-content" :style="{ 'height': height }">
-        <el-card ref="card" shadow="hover" v-for="(item,index) in result" :key="index" @click.native="clickCard(index)"
-          :class="{ selected: item.selected }">
+        <el-card ref="card" shadow="hover" v-for="(item,index) in result" :key="index" @click.native="clickCard(index)" @mouseover.native="overCard(item)" @mouseleave.native="leaveCard(item)"
+          :class="{ selected: item.selected, saved: item.saved }">
           <span v-if="form.order == 'up'" v-for="(item, index) in form.tag.split(' ')" :key="index">
-            <el-tag v-if="item && item.split('')[0] == '#'">{{ item }}</el-tag>
-            <div class="op" style="float: right; margin: 3px 5px 3px 0;">
-              <el-link type="primary" style="font-size: 12px" @click.native="parseOne(item)">导入</el-link>
-              <el-link type="primary" style="font-size: 12px" @click.native="copyLink(item)">复制链接</el-link>
-            </div>
+            <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 0 5px 3px 0">{{ item }}</el-tag>
           </span>
+          <div v-if="form.order == 'up'" :class="{ showOp: item.showOp  }" style="float: right; margin: 0 5px 3px 0;">
+            <el-link type="primary" style="font-size: 12px" @click.native="parseOne(item)">导入</el-link>
+            <el-link type="primary" style="font-size: 12px" @click.native="copyLink(item)">复制链接</el-link>
+          </div>
           <div v-if="item.note">
             <p type="info">{{ item.note }}</p>
             <p>{{ form.delimiter }}</p>
           </div>
           <p><b>摘录：</b>{{ item.highlight }}</p>
           <span v-if="form.order == 'down'" v-for="(item, index) in form.tag.split(' ')" :key="index">
-            <el-tag v-if="item && item.split('')[0] == '#'">{{ item }}</el-tag>
+            <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 3px 5px 0 0">{{ item }}</el-tag>
           </span>
+          <div v-if="form.order == 'down'" :class="{ showOp: item.showOp  }" style="float: right; margin: 3px 5px 0 0;">
+            <el-link type="primary" style="font-size: 12px" @click.native="parseOne(item)">导入</el-link>
+            <el-link type="primary" style="font-size: 12px" @click.native="copyLink(item)">复制链接</el-link>
+          </div>
         </el-card>
       </div>
     </div>
@@ -307,7 +320,7 @@
       count: 0,
       show: true,
       showUploadMessage: false,
-      dialogVisible: true
+      hoverCard: null
     },
     mounted() {
       // var height = this.$refs.card[0].offsetHeight;
@@ -344,6 +357,20 @@
       },
       saveApi() {
         this.$message.info(this.api)
+      },
+      overCard(index){
+        memo_arr = this.result
+        the_memo = memo_arr[index]
+        the_memo.hoverCard = true
+        memo_arr.splice(index, 1, the_memo)
+        this.result = memo_arr
+      },
+      leaveCard(index){
+        memo_arr = this.result
+        the_memo = memo_arr[index]
+        the_memo.hoverCard = false
+        memo_arr.splice(index, 1, the_memo)
+        this.result = memo_arr
       },
       clickCard(index) {
         memo_arr = this.result
