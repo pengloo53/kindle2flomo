@@ -47,7 +47,7 @@ def parse_csv_file(file_path):
 def parse_html_file(file_path):
     result_arr = []     # HTML中有效数据
     result_json = []    # 解析后的笔记数据，对象数组
-    with open(file_path) as file:
+    with open(file_path, encoding='utf8') as file:
         soup = BeautifulSoup(file, 'html5lib')
         book_title = soup.select('.bookTitle')[0].string
         # 截取书名

@@ -1,9 +1,9 @@
-from flask import Flask, request, redirect, url_for, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 import json
 import time
-from parser import parse_csv_file, parse_html_file
+from server.kindle.parser import parse_csv_file, parse_html_file
 from poster import post_all_to_flomo, format_data_to_json
 
 UPLOAD_FOLDER = './uploads'
