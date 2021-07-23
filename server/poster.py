@@ -7,39 +7,40 @@ import time
 import requests
 
 
-def format_data_to_json(data_list, tag, delimiter):
-    result_json = []
-    for data in data_list:
+def format_data_to_content(data, order):
+    if order == 'up':
         if "note" in data:
-            content = tag + '\n' + data["highlight"] + '\n' + delimiter + '\n笔记：' + data["note"]
+            content = data["tag"] + '\n' + data["highlight"] + '\n' + data["delimiter"] + '\n<b>' + data["note"] + '</b>'
         else:
-            content = tag + '\n' + data["highlight"]
-        result_json.append(content)
-    return result_json
+            content = data["tag"] + '\n' + data["highlight"]
+    return content
 
 
-def post_all_to_flomo(json_data, api, is_order):
-    # 顺序查看，那么需要倒序插入笔记
-    if is_order:
-        json_data.reverse()
-    for index, content in enumerate(json_data):
-        s = json.dumps({'content': content})
-        headers = {
-            'Content-Type': 'application/json; charset=UTF-8'
-        }
-        r = requests.post(api, data=s, headers=headers)
-        # 需要顺序查看，才等待1s，保证页面效果
-        if is_order:
-            time.sleep(1)
-    return {
-        "code": 0,
-        "message": "总共 " + str(len(json_data)) + " 条，全部导入完成。"
-    }
-
-
-def post_data_to_flomo(data, api):
-    s = json.dumps({'content': data})
+def post_to_flomo(content, api):
+    s = json.dumps({'content': content})
     headers = {
         'Content-Type': 'application/json; charset=UTF-8'
     }
     return requests.post(api, data=s, headers=headers)
+
+
+# def post_all_to_flomo(json_data, api, is_order):
+#     # 顺序查看，那么需要倒序插入笔记
+#     if is_order:
+#         json_data.reverse()
+#     for index, content in enumerate(json_data):
+#         s = json.dumps({'content': content})
+#         headers = {
+#             'Content-Type': 'application/json; charset=UTF-8'
+#         }
+#         r = requests.post(api, data=s, headers=headers)
+#         # 需要顺序查看，才等待1s，保证页面效果
+#         if is_order:
+#             time.sleep(1)
+#     return {
+#         "code": 0,
+#         "message": "总共 " + str(len(json_data)) + " 条，全部导入完成。"
+#     }
+
+
+

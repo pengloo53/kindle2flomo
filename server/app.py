@@ -19,9 +19,9 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
-# 解析笔记文件
+# 解析笔记文件服务
 @app.route('/parse', methods=['POST'])
-def index():
+def parse():
     result = []
     if request.method == 'POST':
         print(request.files)
@@ -39,7 +39,7 @@ def index():
     return jsonify(result)
 
 
-# 批量导入flomo
+# 批量导入flomo服务
 @app.route('/post', methods=['POST'])
 def post():
     if request.method == 'POST':
@@ -56,6 +56,25 @@ def post():
                 "message": "Limit on the number of requests per day"
             }
         data_json = format_data_to_json(data_list, tag, delimiter)
+        is_order = request.form.get('is_order') or 'false'
+        if is_order == 'false':
+            is_order = False
+        else:
+            is_order = True
+        if api and len(data):
+            return post_all_to_flomo(data_json, api, is_order)
+
+# 导入 MEMO (单条)
+@app.route('/postone',method=['POST'])
+def postone():
+    if request.method == 'POST':
+        print(request.form)
+        api = request.form.get('api')
+        tag = request.form.get('tag')
+        delimiter = request.form.get('delimiter')
+        content = request.form.get('content')
+
+        # data_json = format_data_to_json(data_list, tag, delimiter)
         is_order = request.form.get('is_order') or 'false'
         if is_order == 'false':
             is_order = False
