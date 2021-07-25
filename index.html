@@ -31,7 +31,7 @@
 
     .aside {
       max-width: 280px;
-      margin-right: 2%;
+      /* margin-right: 2%; */
     }
 
     .main {
@@ -131,8 +131,8 @@
 <body>
   <div id="app">
     <!-- aside -->
-    <div class="aside">
-      <h2 style="color: #606266">kindle2flomo</h2>
+    <div v-if="asideVisable" class="aside">
+      <h2 style="color: #606266">kindle2flomo</h2> 
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
         :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove" :on-change="uploadChange"
         :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
@@ -144,31 +144,26 @@
             target="_blank">不知道怎么获取笔记？</el-link>
         </div>
       </el-upload>
-
-      <div v-if="show" class="form">
+      <div class="form">
         <el-divider><i class="el-icon-s-tools" style="color: #909399"> 自定义</i></el-divider>
         <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
-          <el-form-item label="MEMO 标签（支持多个哦）" prop="tag">
+          <el-form-item label="标签（支持多个哦）" prop="tag">
             <el-input v-model="form.tag" placeholder="别忘加 # 号" :clearable="true"></el-input>
           </el-form-item>
           <el-form-item label="分隔符（标注与笔记之间）" prop="delimiter">
             <el-input v-model="form.delimiter" placeholder="默认空一行" :clearable="true"></el-input>
           </el-form-item>
-          <el-form-item label="标签位置" prop="order">
+          <el-form-item label="标签位置（默认下面）" prop="order">
             <el-switch v-model="form.order" :content="form.order" active-value="up" inactive-value="down"
               change="switchChange"></el-switch>
           </el-form-item>
           <el-form-item>
-            <el-button type="danger" size="small" :disabled="form.is_disabled" :loading="form.is_loading"
-              @click="post('form')">批量导入 Flomo</el-button>
             <el-popover placement="bottom" title="" width="520" trigger="click" @hide="saveApi">
               <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
-              <el-button slot="reference" size="small">设置 API</el-button>
+              <el-button slot="reference" icon="el-icon-setting" type="danger" size="small">设置 API</el-button>
             </el-popover>
           </el-form-item>
         </el-form>
-        <el-alert v-if="showUploadMessage" title="导入成功" type="success" :description="uploadMessage" show-icon>
-        </el-alert>
       </div>
       <!-- 帮助 -->
       <div class="help">
@@ -187,7 +182,11 @@
         </ul>
       </div>
     </div>
-    <!-- result -->
+    <div class="middle" style="margin-top: 1.8em; margin-right: 1%;">
+      <el-link v-show="asideVisable" type="primary" @click.native="hideAside"><i class="el-icon-d-arrow-left"></i></el-link>
+      <el-link v-show="!asideVisable" type="primary" @click.native="showAside"><i class="el-icon-d-arrow-right"></i></el-link>
+    </div>
+    <!-- main -->
     <div v-if="result.length" class="main">
       <h2 style="color: #606266">《{{ book_title }}》</h2>
       <div class="main-header" style="color: #606266">
@@ -196,8 +195,9 @@
           <i style="color: #606266" class="el-icon-question" slot="reference"></i>
         </el-popover>
         <div class="op" style="float: right;">
-          <el-link type="primary" @click.native="selectAllCard">全选</el-link>
-          <el-link type="primary" @click.native="cancelselectAllCard">全不选</el-link>
+          <!-- <el-link type="primary" @click.native="selectAllCard">全选</el-link>
+          <el-link type="primary" @click.native="cancelselectAllCard">全不选</el-link> -->
+          <el-link type="primary" @click.native="postsome">多条导入</el-link>
         </div>
       </div>
       <div ref="content" class="main-content" :style="{ 'height': height }">
@@ -207,9 +207,9 @@
           <div class="memo_header" style="margin-bottom: 5px;">
             <span style="font-size:12px; color:#909399;">{{ item.place }}</span>
             <div :class="[ item.showOp? 'showOp' : 'hideOp' ]" style="float: right; margin: 0 5px 3px 0;">
-              <el-link v-if="!item.saved" type="primary" style="font-size: 12px" @click.native.stop="parseOne(item)">导入
+              <el-link v-if="!item.saved" type="primary" style="font-size: 12px" @click.native.stop="postone(item)">导入
               </el-link>
-              <el-link v-if="item.saved" type="primary" style="font-size: 12px" @click.native="copyLink(item)">复制链接
+              <el-link v-if="item.saved" type="success" style="font-size: 12px" @click.native.stop="copyLink(item)">复制链接
               </el-link>
             </div>
           </div>
@@ -235,11 +235,12 @@
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <!-- axios -->
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!-- vue-clipboard -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue-clipboard2/0.3.1/vue-clipboard.min.js"></script>
 
 <script>
   // let url = 'http://kindle2flomo.90byte.com'
   let url = 'http://127.0.0.1:5000'
-  document.cookie = "promo_shown=1; Max-Age=2600000; Secure";
   let app = new Vue({
     el: '#app',
     data: {
@@ -346,8 +347,7 @@
         }
       ],
       count: 0,
-      show: true,
-      showUploadMessage: false
+      asideVisable: true
     },
     mounted() {
       // var height = this.$refs.card[0].offsetHeight;
@@ -379,12 +379,19 @@
         })
         var max_height_col = Math.max(height1, height2, height3);
         height = max_height_col + rows_space_width;
-        // console.log(rows)
-        // console.log('最高列：'+ max_height_col)
         this.height = height + 'px'
       },
       saveApi() {
-        this.$message.info(this.api)
+        if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
+          return this.$message.error('请设置正确的 Flomo API')
+        }
+        this.$message.success('Flomo API 设置成功')
+      },
+      showAside(){
+        this.asideVisable = true;
+      },
+      hideAside(){
+        this.asideVisable = false;
       },
       overCard(item, index) {
         item.showOp = true
@@ -397,31 +404,13 @@
       clickCard(item, index) {
         item.selected = !item.selected
         this.result.splice(index, 1, item)
-        if (item.selected) {
-          this.count++;
-        } else {
-          this.count--;
+        if (!item.saved) {
+          if (item.selected) {
+            this.count++;
+          } else {
+            this.count--;
+          }
         }
-      },
-      selectAllCard() {
-        memo_arr = this.result
-        memo_arr_new = []
-        for (var i = 0; i < memo_arr.length; i++) {
-          memo_arr[i].selected = true
-          memo_arr_new.push(memo_arr[i])
-        }
-        this.result = memo_arr_new
-        this.count = memo_arr_new.length;
-      },
-      cancelselectAllCard() {
-        memo_arr = this.result
-        memo_arr_new = []
-        for (var i = 0; i < memo_arr.length; i++) {
-          memo_arr[i].selected = false
-          memo_arr_new.push(memo_arr[i])
-        }
-        this.result = memo_arr_new;
-        this.count = 0;
       },
       preview(file) {
         this.count = 0
@@ -476,12 +465,35 @@
           this.$message.error('请上传Kindle笔记文件');
         }
       },
-      postOne(item) {
-        if (item.saved) {
-          return this.$message.info('该 MEMO 已经上传至 Flomo')
-        }
+      copyLink(item) {
+        this.$copyText(item.url).then((e) => {
+          this.$message.success('复制成功')
+        }, (e) => {
+          this.$message.success('Can not copy')
+        })
       },
-      post(formName) {
+      post(item) {
+        let formData = new FormData();
+        formData.append("api", this.api);
+        formData.append("tag", this.form.tag);
+        formData.append("delimiter", this.form.delimiter);
+        formData.append("order", this.form.order);
+        formData.append("note", item.note || '')
+        formData.append("highlight", item.highlight || '');
+        axios.post(url + '/post', formData, {
+          "Content-Type": "multipart/form-data"
+        }).then(response => {
+          console.log(response);
+          if (response.data.code == 0) {
+            this.$message.success('导入成功')
+            item.saved = true
+            item.url = 'https://flomoapp.com/mine/?memo_id=' + response.data.memo.slug
+          }
+        }).catch(error => {
+          console.log(error);
+        });
+      },
+      postone(item) {
         // api 校验
         if (!this.api) {
           return this.$message.error('请设置 Flomo API');
@@ -489,10 +501,24 @@
         if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
           return this.$message.error('请设置正确的 Flomo API')
         }
-        // data 校验
+        if (item.saved) {
+          return this.$message.info('该 MEMO 已经上传至 Flomo')
+        }
+        this.post(item)
+      },
+      postsome() {
+        // api 校验
+        if (!this.api) {
+          return this.$message.error('请设置 Flomo API');
+        }
+        if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
+          return this.$message.error('请设置正确的 Flomo API')
+        }
+        // params
+        // 上传列表数据校验
         var data = [];
         for (var i = 0; i < this.result.length; i++) {
-          if (this.result[i].selected) {
+          if (this.result[i].selected && !this.result[i].saved) {
             data.push(this.result[i])
           }
         }
@@ -502,37 +528,10 @@
         if (data.length == 0) {
           return this.$message.error('请点击并选择一条 MEMO 导入')
         }
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            // 逐条导入 MEMO
-            for (var i = 0; i < data.length; i++) {
-              let formData = new FormData();
-              formData.append("api", this.api);
-              formData.append("tag", this.form.tag);
-              formData.append("delimiter", this.form.delimiter);
-              formData.append("order", this.form.order);
-              formData.append("data", JSON.stringify(data));
-              this.form.is_loading = true;
-              axios.post(url + '/post', formData, {
-                "Content-Type": "multipart/form-data"
-              })
-                .then(response => {
-                  console.log(response);
-                  this.uploadMessage = response.data.message
-                  this.form.is_disabled = true
-                  this.form.is_loading = false
-                  this.showUploadMessage = true
-                })
-                .catch(error => {
-                  console.log(error);
-                });
-            }
-            // 检查是否全部上传
-
-          } else {
-            return false;
-          }
-        });
+        // 逐条导入 MEMO
+        for (var i = 0; i < data.length; i++) {
+          this.post(data[i])
+        }
       }
     }
   })
