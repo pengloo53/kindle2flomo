@@ -85,7 +85,7 @@ def parse_html_file(file_path):
                     else:
                         div_content = div.contents[0].string.strip() + div.contents[2].string.strip()
                     result_arr.append(div_content)
-        print(result_arr)
+        # print(result_arr)
         # 位置+标注+笔记
         for index, line in enumerate(result_arr):
             if line[:3] == '标注(' or line[:4] == '标注 (' or line[:4] == ' 标注(':

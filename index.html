@@ -9,6 +9,23 @@
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <title>Kindle to Flomo</title>
   <style>
+    @font-face {
+      font-family: 'iconfont';
+      /* Project id 2701845 */
+      src: url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.woff2?t=1627311898238') format('woff2'),
+        url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.woff?t=1627311898238') format('woff'),
+        url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.ttf?t=1627311898238') format('truetype');
+    }
+
+    .iconfont {
+      font-family: "iconfont" !important;
+      font-size: 16px;
+      font-style: normal;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-stroke-width: 0.2px;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
     body {
       background-color: #FAFAFA;
     }
@@ -132,7 +149,7 @@
   <div id="app">
     <!-- aside -->
     <div v-if="asideVisable" class="aside">
-      <h2 style="color: #606266">kindle2flomo</h2> 
+      <h2 style="color: #606266">kindle2flomo</h2>
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
         :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove" :on-change="uploadChange"
         :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
@@ -183,8 +200,8 @@
       </div>
     </div>
     <div class="middle" style="margin-top: 1.8em; margin-right: 1%;">
-      <el-link v-show="asideVisable" type="primary" @click.native="hideAside"><i class="el-icon-d-arrow-left"></i></el-link>
-      <el-link v-show="!asideVisable" type="primary" @click.native="showAside"><i class="el-icon-d-arrow-right"></i></el-link>
+      <el-link v-show="asideVisable" :underline="false" type="info" @click.native="hideAside"><i class="iconfont">&#xe659;</i></el-link>
+      <el-link v-show="!asideVisable" :underline="false" type="info" @click.native="showAside"><i class="iconfont">&#xe658;</i></el-link>
     </div>
     <!-- main -->
     <div v-if="result.length" class="main">
@@ -387,10 +404,10 @@
         }
         this.$message.success('Flomo API 设置成功')
       },
-      showAside(){
+      showAside() {
         this.asideVisable = true;
       },
-      hideAside(){
+      hideAside() {
         this.asideVisable = false;
       },
       overCard(item, index) {
@@ -428,7 +445,7 @@
         this.$message.error('一次只支持上传 10000 个文件');
       },
       beforeRemove() {
-        this.$message.error('一万本还不够吗')
+        this.$message.error('无需删除，支持 N 本同时预览')
         return false
       },
       handleRequest() {

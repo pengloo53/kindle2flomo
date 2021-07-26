@@ -6,11 +6,11 @@ import time
 from kindle.parser import parse_csv_file, parse_html_file
 from poster import post_to_flomo, format_data_to_content
 
-UPLOAD_FOLDER = './uploads'
+BASE_PATH = os.path.dirname(__file__)
+UPLOAD_FOLDER = './kindle/uploads'
 ALLOWED_EXTENSIONS = set(['csv', 'html'])
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 CORS(app)
 
 
@@ -30,7 +30,7 @@ def parse():
             filename = file.filename.rsplit('.', 1)[0]
             ext = file.filename.rsplit('.', 1)[1]
             new_filename = filename + '_' + str(time.time()) + '.' + ext
-            file_save_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+            file_save_path = os.path.join(BASE_PATH, UPLOAD_FOLDER, new_filename)
             file.save(file_save_path)
             if ext == 'html':
                 result = parse_html_file(file_save_path)
