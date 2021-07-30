@@ -263,7 +263,7 @@
       height: '1500px',
       width: '',
       fileList: [],
-      api: 'https://flomoapp.com/iwh/MzIzNQ/94b791b5372299b5736f8326358a5a44/',
+      api: '',
       form: {
         tag: '#kindle/《不拘一格》',
         delimiter: '------------------',
@@ -527,6 +527,8 @@
             item.selected = false
             item.url = 'https://flomoapp.com/mine/?memo_id=' + response.data.memo.slug
             this.flashCount();
+          }else{
+            this.$message.error('导入失败：' + response.data.message + '，请检查 Flomo API 设置是否正确');
           }
         }).catch(error => {
           console.log(error);
