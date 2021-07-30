@@ -70,14 +70,6 @@
       min-height: 20px;
     }
 
-    .main .main-header {
-      display: block;
-      margin-bottom: 15px;
-      padding: 0 10px;
-      font-size: 1em;
-      font-weight: bold;
-    }
-
     .main .main-content {
       display: flex;
       flex-flow: column wrap;
@@ -97,7 +89,8 @@
       width: 32%;
       margin-bottom: 2%;
       font-size: 14px;
-      color: #606266
+      color: #606266;
+      min-width: 300px;
     }
 
     .main .el-card .el-card__body {
@@ -165,7 +158,7 @@
         <el-divider><i class="el-icon-s-tools" style="color: #909399"> 自定义</i></el-divider>
         <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
           <el-form-item label="标签（支持多个哦）" prop="tag">
-            <el-input v-model="form.tag" placeholder="别忘加 # 号" :clearable="true"></el-input>
+            <el-input v-model="form.tag" placeholder="开头 # 号，多个标签空格分隔" :clearable="true"></el-input>
           </el-form-item>
           <el-form-item label="分隔符（标注与笔记之间）" prop="delimiter">
             <el-input v-model="form.delimiter" placeholder="默认空一行" :clearable="true"></el-input>
@@ -205,30 +198,36 @@
     </div>
     <!-- main -->
     <div v-if="result.length" class="main">
-      <h2 style="color: #606266">《{{ book_title }}》</h2>
-      <div class="main-header" style="color: #606266">
-        <span>共 {{ result.length }} 条笔记，已选 {{ count }} 条</span>
-        <el-popover placement="top-start" title="" width="250" trigger="hover" content="Flomo 每天只支持上传 100 条 Memo">
-          <i style="color: #606266" class="el-icon-question" slot="reference"></i>
-        </el-popover>
-        <div class="op" style="float: right;">
-          <!-- <el-link type="primary" @click.native="selectAllCard">全选</el-link>
-          <el-link type="primary" @click.native="cancelselectAllCard">全不选</el-link> -->
-          <el-link type="primary" @click.native="postsome">多条导入</el-link>
+      <h2 style="color: #606266">《{{ book_title }}》
+        <small style="font-size: medium">
+          <span>共 {{ result.length }} 条笔记</span>
+          <span v-if="savedCount">，已上传 {{ savedCount }} 条
+            <el-popover placement="top-start" title="" width="250" trigger="hover" content="Flomo 每天只支持上传 100 条 Memo">
+              <i style="color: #606266" class="el-icon-question" slot="reference"></i>
+            </el-popover>
+          </span>
+          <span v-if="selectedCount">，已选择 {{ selectedCount }} 条</span>
+        </small>
+        <div class="op" style="display: inline;float: right;line-height: 1.8em;">
+          <el-link v-if="selectedCount > 1" :underline="false" type="primary" @click.native="postsome">批量导入</el-link>
+          <!-- <el-link v-if="selectedCount > 1" :underline="false" type="danger" @click.native="deletesome">批量删除</el-link> -->
         </div>
-      </div>
+      </h2>
       <div ref="content" class="main-content" :style="{ 'height': height }">
         <el-card ref="card" shadow="hover" v-for="(item,index) in result" :key="index"
-          @click.native="clickCard(item,index)" @mouseover.native="overCard(item,index)"
-          @mouseleave.native="leaveCard(item,index)" :class="{ selected: item.selected, saved: item.saved }">
+          @click.native="clickCard(item,index)"
+          @mouseover.native="overCard(item,index)"
+          @mouseleave.native="leaveCard(item,index)"
+          :class="{ selected: item.selected, saved: item.saved }"
+          >
           <div class="memo_header" style="margin-bottom: 5px;">
-            <span style="font-size:12px; color:#909399;">{{ item.place }}</span>
-            <div :class="[ item.showOp? 'showOp' : 'hideOp' ]" style="float: right; margin: 0 5px 3px 0;">
-              <el-link v-if="!item.saved" type="primary" style="font-size: 12px" @click.native.stop="postone(item)">导入
-              </el-link>
-              <el-link v-if="item.saved" type="success" style="font-size: 12px" @click.native.stop="copyLink(item)">复制链接
-              </el-link>
+            <span style="font-size:12px; color:#909399;">{{ item.place }}
+            <div :class="[ item.showOp? 'showOp' : 'hideOp' ]" style="float: right;">
+              <el-link v-if="!item.saved" :underline="false" icon="el-icon-upload" type="primary" @click.native.stop="postone(item)" title="导入Flomo"></el-link>
+              <el-link v-if="!item.saved" :underline="false" icon="el-icon-delete" type="danger" @click.native.stop="del(item,index)" title="删除"></el-link>
+              <el-link v-if="item.saved" :underline="false" icon="el-icon-copy-document" type="success" @click.native.stop="copyLink(item)" title="复制链接"></el-link>
             </div>
+          </span>
           </div>
           <span v-if="form.order == 'up'" v-for="(item, index) in form.tag.split(' ')" :key="index">
             <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 0 5px 3px 0">{{ item }}</el-tag>
@@ -264,7 +263,7 @@
       height: '1500px',
       width: '',
       fileList: [],
-      api: '',
+      api: 'https://flomoapp.com/iwh/MzIzNQ/94b791b5372299b5736f8326358a5a44/',
       form: {
         tag: '#kindle/《不拘一格》',
         delimiter: '------------------',
@@ -363,7 +362,8 @@
           "place": "位置 4242"
         }
       ],
-      count: 0,
+      selectedCount: 0,
+      savedCount: 0,
       asideVisable: true
     },
     mounted() {
@@ -378,6 +378,21 @@
       }
     },
     methods: {
+      // 刷新 count
+      flashCount(){
+        savedCount = 0;
+        selectedCount = 0 ;
+        this.result.forEach((item, index)=>{
+          if(item.selected){
+            selectedCount ++;
+          }
+          if(item.saved){
+            savedCount ++;
+          }
+        })
+        this.selectedCount = selectedCount;
+        this.savedCount = savedCount;
+      },
       // 自动计算瀑布流高度
       setHeight() {
         var height1 = 0, height2 = 0, height3 = 0;
@@ -419,13 +434,13 @@
         this.result.splice(index, 1, item)
       },
       clickCard(item, index) {
-        item.selected = !item.selected
-        this.result.splice(index, 1, item)
-        if (!item.saved) {
+        if(!item.saved){
+          item.selected = !item.selected
+          this.result.splice(index, 1, item)
           if (item.selected) {
-            this.count++;
+            this.selectedCount++;
           } else {
-            this.count--;
+            this.selectedCount--;
           }
         }
       },
@@ -489,6 +504,11 @@
           this.$message.success('Can not copy')
         })
       },
+      // 删除
+      del(item, index){
+        this.result.splice(index, 1)
+        this.flashCount();
+      },
       post(item) {
         let formData = new FormData();
         formData.append("api", this.api);
@@ -504,7 +524,9 @@
           if (response.data.code == 0) {
             this.$message.success('导入成功')
             item.saved = true
+            item.selected = false
             item.url = 'https://flomoapp.com/mine/?memo_id=' + response.data.memo.slug
+            this.flashCount();
           }
         }).catch(error => {
           console.log(error);
@@ -521,7 +543,7 @@
         if (item.saved) {
           return this.$message.info('该 MEMO 已经上传至 Flomo')
         }
-        this.post(item)
+        this.post(item);
       },
       postsome() {
         // api 校验
