@@ -1,7 +1,7 @@
 # 作者：鲁鹏
 # Kindle 笔记文件解析，支持 csv 和 html 文件
 # 解析内容：标注，笔记，标题
-
+import re
 from bs4 import BeautifulSoup
 
 
@@ -14,32 +14,48 @@ def strip_space(string):
     return new_string
 
 
+# 判断是标注还是笔记
+def highlight_or_note(str):
+    if str.startswith('标注(') or str.startswith('标注 (') or str.startswith('Highlight(') or str.startswith('Highlight ('):
+        return 'highlight'
+    elif str.startswith('笔记 -') or str.startswith('备注 -') or str.startswith('Note -'):
+        return 'note'
+
+
+# 截取书名，去除书名的描述部分
+def format_book_title(title):
+    title = title.strip()
+    if title.startswith('《'):
+        title = title[1:]
+    if title.endswith('》'):
+        title = title[:-1]
+    return re.split('[(（]', title)[0].strip()
+
+
 def parse_csv_file(file_path):
     result_json = []    # 解析后的笔记数据，对象数组
     with open(file_path, encoding='utf8') as file:
         for index, line in enumerate(file):
             # 截取书名
             if index == 1:
-                desc_index = line.find('（')
-                if desc_index == -1:
-                    title = line[1:]
-                else:
-                    title = line[1: desc_index]
+                title = format_book_title(line[1:])
             # 取位置标注和笔记
-            if line[1:3] == '标注':
-                place = line.split(',')[1][1:-2]
-                highlight = line.split(',')[3][1:-2]
+            line_arr = line.split(',')
+            line_begin_str = line_arr[0][1:-2]  # 去掉引号
+            if highlight_or_note(line_begin_str) == 'highlight':
+                place = line_arr[1][1:-2]
+                highlight = line_arr[3][1:-2]
                 result_json.append({
                     "place": place,
                     "highlight": highlight
                 })
-            if line[1:3] == '笔记':
+            if highlight_or_note(line_begin_str) == 'note':
                 note = line.split(',')[3][1:-2]
                 the_result = result_json.pop()
                 the_result['note'] = note
                 result_json.append(the_result)
         return {
-            "book_title": title.strip(),
+            "book_title": title,
             "result": result_json
         }
 
@@ -50,12 +66,7 @@ def parse_html_file(file_path):
     with open(file_path, encoding='utf8') as file:
         soup = BeautifulSoup(file, 'html5lib')
         book_title = soup.select('.bookTitle')[0].string
-        # 截取书名
-        desc_index = book_title.find('（')
-        if desc_index == -1:
-            book_title = book_title[1:]
-        else:
-            book_title = book_title[1:desc_index]
+        book_title = format_book_title(book_title)
         # 取标注和笔记
         # 由于 Mac 阅读软件导出的 HTML 文件结构有缺陷（缺少关闭标签）导致解析过程出现混乱，逻辑只能随之混乱。
         # 根据 Mac 导出的 HTML 不存在 div.noteHeading 的标签来区分
@@ -88,19 +99,19 @@ def parse_html_file(file_path):
         # print(result_arr)
         # 位置+标注+笔记
         for index, line in enumerate(result_arr):
-            if line[:3] == '标注(' or line[:4] == '标注 (' or line[:4] == ' 标注(':
-                place = result_arr[index].split(') - ')[1]
+            if highlight_or_note(line) == 'highlight':
+                place = result_arr[index].split('-')[1].strip()
                 highlight = strip_space(result_arr[index+1])
                 result_json.append({
                     "place": place,
                     "highlight": highlight
                 })
-            if line[:5] == '笔记 - ' or line[:5] == '备注 - ':
+            if highlight_or_note(line) == 'note':
                 note = result_arr[index+1]
                 the_result = result_json.pop()
                 the_result['note'] = note
                 result_json.append(the_result)
         return {
-            "book_title": book_title.strip(),
+            "book_title": book_title,
             "result": result_json
         }

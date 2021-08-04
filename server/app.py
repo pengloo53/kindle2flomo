@@ -24,7 +24,7 @@ def allowed_file(filename):
 def parse():
     result = []
     if request.method == 'POST':
-        print(request.files)
+        # print(request.files)
         file = request.files.get('file')
         if file and allowed_file(file.filename):
             filename = file.filename.rsplit('.', 1)[0]

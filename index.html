@@ -90,7 +90,7 @@
       margin-bottom: 2%;
       font-size: 14px;
       color: #606266;
-      min-width: 300px;
+      /* min-width: 300px; */
     }
 
     .main .el-card .el-card__body {
@@ -458,10 +458,6 @@
       },
       exceed() {
         this.$message.error('一次只支持上传 10000 个文件');
-      },
-      beforeRemove() {
-        this.$message.error('无需删除，支持 N 本同时预览')
-        return false
       },
       handleRequest() {
         console.log('request')
