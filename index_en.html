@@ -1,0 +1,556 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <title>Kindle to Flomo</title>
+  <style>
+    @font-face {
+      font-family: 'iconfont';
+      /* Project id 2701845 */
+      src: url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.woff2?t=1627311898238') format('woff2'),
+        url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.woff?t=1627311898238') format('woff'),
+        url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.ttf?t=1627311898238') format('truetype');
+    }
+
+    .iconfont {
+      font-family: "iconfont" !important;
+      font-size: 16px;
+      font-style: normal;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-stroke-width: 0.2px;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: #FAFAFA;
+    }
+
+    .el-divider__text {
+      background-color: #FAFAFA;
+    }
+
+    .el-tag {
+      padding: 0 4px;
+      line-height: 24px;
+      height: 24px;
+    }
+
+    #app {
+      display: flex;
+      justify-content: center;
+      padding: 0 2%;
+    }
+
+    .aside {
+      max-width: 280px;
+      /* margin-right: 2%; */
+    }
+
+    .main {
+      max-width: 1600px;
+    }
+
+    .el-upload-list__item-name [class^=el-icon] {
+      height: auto
+    }
+
+    .help ul {
+      margin-top: 20px;
+      padding: 0;
+    }
+
+    .main p {
+      line-height: 1.8;
+      margin: 0;
+      min-height: 20px;
+    }
+
+    .main .main-content {
+      display: flex;
+      flex-flow: column wrap;
+      align-content: space-between;
+    }
+
+    /* 强制换列 */
+    .main .main-content::before,
+    .main .main-content::after {
+      content: "";
+      flex-basis: 100%;
+      width: 0;
+      order: 2;
+    }
+
+    .main .el-card {
+      width: 32%;
+      margin-bottom: 2%;
+      font-size: 14px;
+      color: #606266;
+      /* min-width: 300px; */
+    }
+
+    .main .el-card .el-card__body {
+      padding: 10px 15px;
+    }
+
+    /* 将内容块重排为3列 */
+    .el-card:nth-child(3n+1) {
+      order: 1;
+    }
+
+    .el-card:nth-child(3n+2) {
+      order: 2;
+    }
+
+    .el-card:nth-child(3n) {
+      order: 3;
+    }
+
+    .selected {
+      border: 1px solid #5783F7;
+    }
+
+    .saved {
+      border: 1px solid #67C23A;
+    }
+
+    .showOp {
+      display: block;
+    }
+
+    .hideOp {
+      display: none;
+    }
+
+    .el-upload-dragger {
+      width: 280px;
+      height: 140px;
+    }
+
+    .el-upload-dragger .el-icon-upload {
+      margin: 20px 0 10px;
+      font-size: 60px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <!-- aside -->
+    <div v-if="asideVisable" class="aside">
+      <h2 style="color: #606266">kindle2flomo</h2>
+      <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
+        :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove" :on-change="uploadChange"
+        :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">Upload Kindle Note Files</div>
+        <div class="el-upload__tip" slot="tip">
+          <el-link type="info"
+            href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd"
+            target="_blank">How to get kindle note files?</el-link>
+        </div>
+      </el-upload>
+      <div class="form">
+        <el-divider><i class="el-icon-s-tools" style="color: #909399"> Customize</i></el-divider>
+        <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
+          <el-form-item label="Tags (support multiple)" prop="tag">
+            <el-input v-model="form.tag" placeholder="Start with #, multiple labels separated by spaces" :clearable="true"></el-input>
+          </el-form-item>
+          <el-form-item label="Separator (between highlight and note)" prop="delimiter">
+            <el-input v-model="form.delimiter" placeholder="Blank line by default" :clearable="true"></el-input>
+          </el-form-item>
+          <el-form-item label="Tag position (below by default)" prop="order">
+            <el-switch v-model="form.order" :content="form.order" active-value="up" inactive-value="down"
+              change="switchChange"></el-switch>
+          </el-form-item>
+          <el-form-item>
+            <el-popover placement="bottom" title="" width="520" trigger="click" @hide="saveApi">
+              <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
+              <el-button slot="reference" icon="el-icon-setting" type="danger" size="small">Set up flomo API</el-button>
+            </el-popover>
+          </el-form-item>
+        </el-form>
+      </div>
+      <!-- 帮助 -->
+      <!-- <div class="help">
+        <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 故事</i></el-divider>
+        <ul style="list-style: none;">
+          <li>
+            <el-link type="info"
+              href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198220&idx=1&sn=5d0fecf4d3a4ab1469724292dad9797d&chksm=be5734058920bd13ac17f149d7a54dd01b17a066d70f55a813ebb338075b6837f6c6605b255b&token=1351484622&lang=zh_CN#rd"
+              target="_blank">1. 想了解它诞生的故事？</el-link>
+          </li>
+          <li>
+            <el-link type="info"
+              href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198238&idx=1&sn=31d5111d4a3bdc65ab1283612f1427f1&chksm=be5734178920bd0117a068f2c73897fd05c37bddba78efd62ccdf2bb6df5a0386172a4499143&token=677060446&lang=zh_CN#rd"
+              target="_blank">2. 想了解它的实现过程？</el-link>
+          </li>
+        </ul>
+      </div> -->
+    </div>
+    <div class="middle" style="margin-top: 1.8em; margin-right: 1%;">
+      <el-link v-show="asideVisable" :underline="false" type="info" @click.native="hideAside"><i class="iconfont">&#xe659;</i></el-link>
+      <el-link v-show="!asideVisable" :underline="false" type="info" @click.native="showAside"><i class="iconfont">&#xe658;</i></el-link>
+    </div>
+    <!-- main -->
+    <div v-if="result.length" class="main">
+      <h2 style="color: #606266">《{{ book_title }}》
+        <small style="font-size: medium">
+          <span>Total {{ result.length }} memos</span>
+          <span v-if="savedCount">，uploaded {{ savedCount }} 
+            <el-popover placement="top-start" title="" width="250" trigger="hover" content="Flomo 每天只支持上传 100 条 Memo">
+              <i style="color: #606266" class="el-icon-question" slot="reference"></i>
+            </el-popover>
+          </span>
+          <span v-if="selectedCount">, selected {{ selectedCount }}</span>
+        </small>
+        <div class="op" style="display: inline;float: right;line-height: 1.8em;">
+          <el-link v-if="selectedCount > 1" :underline="false" type="primary" @click.native="postsome">Import</el-link>
+        </div>
+      </h2>
+      <div ref="content" class="main-content" :style="{ 'height': height }">
+        <el-card ref="card" shadow="hover" v-for="(item,index) in result" :key="index"
+          @click.native="clickCard(item,index)"
+          @mouseover.native="overCard(item,index)"
+          @mouseleave.native="leaveCard(item,index)"
+          :class="{ selected: item.selected, saved: item.saved }"
+          >
+          <div class="memo_header" style="margin-bottom: 5px;">
+            <span style="font-size:12px; color:#909399;">{{ item.place }}
+            <div :class="[ item.showOp? 'showOp' : 'hideOp' ]" style="float: right;">
+              <el-link v-if="!item.saved" :underline="false" icon="el-icon-upload" type="primary" @click.native.stop="postone(item)" title="upload"></el-link>
+              <el-link v-if="!item.saved" :underline="false" icon="el-icon-delete" type="danger" @click.native.stop="del(item,index)" title="delete"></el-link>
+              <el-link v-if="item.saved" :underline="false" icon="el-icon-copy-document" type="success" @click.native.stop="copyLink(item)" title="copy link"></el-link>
+            </div>
+          </span>
+          </div>
+          <span v-if="form.order == 'up'" v-for="(item, index) in form.tag.split(' ')" :key="index">
+            <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 0 5px 3px 0">{{ item }}</el-tag>
+          </span>
+          <p>{{ item.highlight }}</p>
+          <div v-if="item.note">
+            <p>{{ form.delimiter }}</p>
+            <p type="info"><b>note：{{ item.note }}</b></p>
+          </div>
+          <span v-if="form.order == 'down'" v-for="(item, index) in form.tag.split(' ')" :key="index">
+            <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 3px 5px 0 0">{{ item }}</el-tag>
+          </span>
+        </el-card>
+      </div>
+    </div>
+  </div>
+</body>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<!-- axios -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!-- vue-clipboard -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue-clipboard2/0.3.1/vue-clipboard.min.js"></script>
+
+<script>
+  let url = 'http://kindle2flomo.90byte.com'
+  // let url = 'http://127.0.0.1:5000'
+  let app = new Vue({
+    el: '#app',
+    data: {
+      height: '1500px',
+      width: '',
+      fileList: [],
+      api: '',
+      form: {
+        tag: '#kindle/《Eclectic》',
+        delimiter: '------------------',
+        order: 'down',
+        is_disabled: false,
+        is_loading: false,
+        is_selected: false
+      },
+      rule: {
+        delimiter: [
+          { min: 1, max: 30, message: '1 to 30 characters', trigger: 'blur' }
+        ],
+        is_order: false
+      },
+      book_title: 'Example: Eclectic',
+      result: [
+      {
+          "highlight": "Judgment can solve almost all ambiguities, but the process cannot.",
+          "note": "The importance of judgment",
+          "place": "Location 320"
+        },
+        {
+          "highlight": "The core of Netflix's culture is \"talent is more important than process, innovation is higher than efficiency, and freedom is more than control\". It must be understood that such a culture is built on a very important basis: creativity requires freedom, but freedom cannot be abused. So Netflix only recruits \"adults\", that is, those who understand that freedom means greater responsibility.",
+          "note": "The fundamental problem lies in the recruitment of talents, and most companies do not pay attention to this link.",
+          "place": "Location 127"
+        },
+        
+        {
+          "highlight": "This is the core of the concept of \"freedom and responsibility\". If someone abuses the freedom you give them, they must be punished, and they must be severely punished. In this way, other employees will take warning, otherwise, freedom will be meaningless.",
+          "note": "Most companies just don't want to get rid of their skins. They will be peaceful and consume energy. This is internal friction.",
+          "place": "3 Cancel travel and funding approval > Location 1249"
+        },
+        {
+          "highlight": "It is my own responsibility to understand my own value, and then take the initiative to fight for the rewards I deserve!",
+          "place": "4 Pay the industry's highest salary > Location 1754"
+        },
+        {
+          "highlight": "This is indeed a very meaningful study. Creative work requires a certain degree of liberation of your brain. If you are always thinking about what you need to do to perform well and get high bonuses, then you lack an open cognitive space, and the possibility of generating the best ideas and the best ideas is very slim. As a result, you actually did worse.",
+          "place": "4 Pay the industry's highest salary > Location 1564"
+        },
+        {
+          "highlight": "If your answer is all negative, then you should fire her (in the next chapter, we will talk about employees who have to leave with severance pay for mediocre performance); if your answer is yes, then please don’t interfere and leave the decision. Just leave it to her.",
+          "note": "There is only one principle that has been implemented all the time, the survival of the fittest.",
+          "place": "6 No decision-making approval required > Location 2345"
+        },
+        {
+          "highlight": "The informed commander shall bear all the responsibilities of the project, including the independent signing of contract documents.",
+          "note": "The person who actually does the work is responsible.",
+          "place": "6 No decision-making approval required > Location 2580"
+        },
+        {
+          "highlight": "Of course, for some industries, zero mistakes must be guaranteed. But Netflix's business does not involve safety-related industries, such as medical care and nuclear energy. Our market needs innovation. In the long run, the biggest crisis we face is not making mistakes, but a lack of innovation and a lack of entertainment ideas that satisfy customers, which will eventually lead to us being eliminated by the market.",
+          "place": "6 No decision-making approval required > Location 2368"
+        },
+        
+        {
+          "highlight": "You must develop such a habit-if you are sure to hire a better employee, then decisively quit the current employee. Of course, it is very difficult to do this, because the employees on the job are also very good. However, you must do this.",
+          "note": "This is to prove again: the survival of the fittest.",
+          "place": "7 Employee retention test > Location 2801"
+        },
+        {
+          "highlight": "The most well-known method of decision-making is the leadership decision. Leaders need to approve decision-making, guide the process, and select personnel. Sometimes, he may directly tell employees what to do, and often check and correct those practices that are not in line with his intentions; sometimes, he will try to give employees more power and use process control instead of direct supervision.",
+          "place": "9 Scenario management rather than control management > Location 3401"
+        },
+        {
+          "highlight": "\"The Little Prince\" If you want to build a ship, don't always urge people to pick wood, busy assigning work and giving orders. Instead, they want to arouse their yearning for the vast sea.",
+          "place": "9 Scenario management rather than control management > Location 3492"
+        },
+        {
+          "highlight": "No matter which region or industry, most organizations implement this pyramid-shaped decision-making model. This model includes two aspects: on the one hand, the boss makes a decision, and then communicates it level by level from top to bottom, all the way to the bottom of the pyramid; on the other hand, low-level employees can only deal with small and subtle issues, which are slightly larger. The problem needs to be reported layer by layer.",
+          "place": "9 Scenario management rather than control management > Location 3616"
+        },
+        {
+            "highlight": "Instead of wasting a lot of money in such a plan, it is better to directly give this employee a generous severance subsidy, regret to inform him that he is not suitable for this job, and wish him better development in the future.",
+            "note": "The management cost saved is directly given to the employees. This method is indeed more humane to a certain extent.",
+            "place": "7 Employee retention test > Location 2942"
+        }
+      ],
+      selectedCount: 0,
+      savedCount: 0,
+      asideVisable: true
+    },
+    mounted() {
+      // var height = this.$refs.card[0].offsetHeight;
+      // console.log(this.$refs.card[0].clientHeight)
+      this.$nextTick(() => {
+        this.setHeight();
+      })
+
+      window.onresize = () => {
+        this.setHeight();
+      }
+    },
+    methods: {
+      // 刷新 count
+      flashCount(){
+        savedCount = 0;
+        selectedCount = 0 ;
+        this.result.forEach((item, index)=>{
+          if(item.selected){
+            selectedCount ++;
+          }
+          if(item.saved){
+            savedCount ++;
+          }
+        })
+        this.selectedCount = selectedCount;
+        this.savedCount = savedCount;
+      },
+      // 自动计算瀑布流高度
+      setHeight() {
+        var height1 = 0, height2 = 0, height3 = 0;
+        var rows = parseInt(this.result.length / 3) + 1;
+        var rows_space_width = (rows + 1) * this.$refs.content.offsetWidth * 0.02;
+        this.$refs.card.forEach((item, index) => {
+          if (index % 3 == 0) {
+            height1 = height1 + item.$el.offsetHeight
+          }
+          if (index % 3 == 1) {
+            height2 = height2 + item.$el.offsetHeight
+          }
+          if (index % 3 == 2) {
+            height3 = height3 + item.$el.offsetHeight
+          }
+        })
+        var max_height_col = Math.max(height1, height2, height3);
+        height = max_height_col + rows_space_width;
+        this.height = height + 'px'
+      },
+      saveApi() {
+        if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
+          return this.$message.error('Please set the correct flomo API')
+        }
+        this.$message.success('flomo API set up successfully')
+      },
+      showAside() {
+        this.asideVisable = true;
+      },
+      hideAside() {
+        this.asideVisable = false;
+      },
+      overCard(item, index) {
+        item.showOp = true
+        this.result.splice(index, 1, item)
+      },
+      leaveCard(item, index) {
+        item.showOp = false
+        this.result.splice(index, 1, item)
+      },
+      clickCard(item, index) {
+        if(!item.saved){
+          item.selected = !item.selected
+          this.result.splice(index, 1, item)
+          if (item.selected) {
+            this.selectedCount++;
+          } else {
+            this.selectedCount--;
+          }
+        }
+      },
+      preview(file) {
+        this.count = 0
+        this.parse(file)
+      },
+      uploadSuccess(res, file, fileList) {
+        console.log('success')
+        // this.form.file = fileList[0].raw;
+      },
+      uploadChange(file, fileList) {
+        console.log('change')
+        this.fileList.push(file.raw)
+      },
+      exceed() {
+        this.$message.error('Only support 10000 files');
+      },
+      handleRequest() {
+        console.log('request')
+        var length = this.fileList.length;
+        if (length == 1) {
+          this.parse(this.fileList[0])
+        } else {
+          this.$message.warning('Click on the note file on the left to switch notes')
+        }
+      },
+      parse(file) {
+        console.log('parse file: ' + file)
+        if (file) {
+          let formData = new FormData();
+          formData.append("file", file);
+          axios.post(url + '/parse', formData, {
+            "Content-Type": "multipart/form-data"
+          })
+            .then(response => {
+              this.book_title = response.data.book_title
+              this.form.tag = "#kindle/《" + response.data.book_title + "》"
+              this.result = response.data.result
+              this.show = true
+              this.$nextTick(() => {
+                this.setHeight();
+              })
+              // this.setHeight()
+            })
+            .catch(error => {
+              console.log(error);
+            });
+        } else {
+          this.$message.error('Please upload Kindle notes file');
+        }
+      },
+      copyLink(item) {
+        this.$copyText(item.url).then((e) => {
+          this.$message.success('Copy successfully')
+        }, (e) => {
+          this.$message.success('Can not copy')
+        })
+      },
+      // 删除
+      del(item, index){
+        this.result.splice(index, 1)
+        this.flashCount();
+      },
+      post(item) {
+        let formData = new FormData();
+        formData.append("api", this.api);
+        formData.append("tag", this.form.tag);
+        formData.append("delimiter", this.form.delimiter);
+        formData.append("order", this.form.order);
+        formData.append("note", item.note || '')
+        formData.append("highlight", item.highlight || '');
+        axios.post(url + '/post', formData, {
+          "Content-Type": "multipart/form-data"
+        }).then(response => {
+          console.log(response);
+          if (response.data.code == 0) {
+            this.$message.success('Upload successful')
+            item.saved = true
+            item.selected = false
+            item.url = 'https://flomoapp.com/mine/?memo_id=' + response.data.memo.slug
+            this.flashCount();
+          }else{
+            this.$message.error('Upload Error: ' + response.data.message + '，Please check the flomo API');
+          }
+        }).catch(error => {
+          console.log(error);
+        });
+      },
+      postone(item) {
+        // api 校验
+        if (!this.api) {
+          return this.$message.error('Please set up flomo API');
+        }
+        if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
+          return this.$message.error('Please set the correct flomo API')
+        }
+        if (item.saved) {
+          return this.$message.info('The memo has been uploaded to flomo')
+        }
+        this.post(item);
+      },
+      postsome() {
+        // api 校验
+        if (!this.api) {
+          return this.$message.error('Please set up flomo API');
+        }
+        if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
+          return this.$message.error('Please set the correct flomo API')
+        }
+        // params
+        // 上传列表数据校验
+        var data = [];
+        for (var i = 0; i < this.result.length; i++) {
+          if (this.result[i].selected && !this.result[i].saved) {
+            data.push(this.result[i])
+          }
+        }
+        if (data.length > 100) {
+          return this.$message.error('Flomo API only supports 100 items per day');
+        }
+        if (data.length == 0) {
+          return this.$message.error('Please click and select a memo import')
+        }
+        // 逐条导入 MEMO
+        for (var i = 0; i < data.length; i++) {
+          this.post(data[i])
+        }
+      }
+    }
+  })
+</script>
+
+</html>
