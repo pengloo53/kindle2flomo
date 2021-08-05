@@ -144,7 +144,7 @@
     <div v-if="asideVisable" class="aside">
       <h2 style="color: #606266">kindle2flomo</h2>
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
-        :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove" :on-change="uploadChange"
+        :http-request="handleRequest" :on-preview="preview" :on-change="uploadChange"
         :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">上传 Kindle 笔记，支持多选</div>
@@ -235,7 +235,7 @@
           <p>{{ item.highlight }}</p>
           <div v-if="item.note">
             <p>{{ form.delimiter }}</p>
-            <p type="info"><b>笔记：{{ item.note }}</b></p>
+            <p type="info"><b>{{ note_prefix }}{{ item.note }}</b></p>
           </div>
           <span v-if="form.order == 'down'" v-for="(item, index) in form.tag.split(' ')" :key="index">
             <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 3px 5px 0 0">{{ item }}</el-tag>
@@ -264,6 +264,7 @@
       width: '',
       fileList: [],
       api: '',
+      note_prefix: '笔记：',
       form: {
         tag: '#kindle/《不拘一格》',
         delimiter: '------------------',
@@ -511,6 +512,7 @@
         formData.append("tag", this.form.tag);
         formData.append("delimiter", this.form.delimiter);
         formData.append("order", this.form.order);
+        formData.append("note_prefix", this.note_prefix)
         formData.append("note", item.note || '')
         formData.append("highlight", item.highlight || '');
         axios.post(url + '/post', formData, {

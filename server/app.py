@@ -47,11 +47,13 @@ def post():
         tag = request.form.get('tag') or ''
         delimiter = request.form.get('delimiter') or ''
         highlight = request.form.get('highlight') or ''
+        note_prefix = request.form.get('note_prefix')
         note = request.form.get('note') or ''
         order = request.form.get('order')
         content = format_data_to_content({
             'tag': tag,
             'delimiter': delimiter,
+            'note_prefix': note_prefix,
             'note': note,
             'highlight': highlight
         }, order)

@@ -144,7 +144,7 @@
     <div v-if="asideVisable" class="aside">
       <h2 style="color: #606266">Kindle2flomo</h2>
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
-        :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove" :on-change="uploadChange"
+        :http-request="handleRequest" :on-preview="preview" :on-change="uploadChange"
         :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">Upload Kindle note files</div>
@@ -200,7 +200,7 @@
         <small style="font-size: medium">
           <span>Total {{ result.length }} memos</span>
           <span v-if="savedCount">，uploaded {{ savedCount }} 
-            <el-popover placement="top-start" title="" width="250" trigger="hover" content="Flomo 每天只支持上传 100 条 Memo">
+            <el-popover placement="top-start" title="" trigger="hover" content="Flomo API only supports 100 items per day">
               <i style="color: #606266" class="el-icon-question" slot="reference"></i>
             </el-popover>
           </span>
@@ -232,7 +232,7 @@
           <p>{{ item.highlight }}</p>
           <div v-if="item.note">
             <p>{{ form.delimiter }}</p>
-            <p type="info"><b>note：{{ item.note }}</b></p>
+            <p type="info"><b>{{ note_prefix }}{{ item.note }}</b></p>
           </div>
           <span v-if="form.order == 'down'" v-for="(item, index) in form.tag.split(' ')" :key="index">
             <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 3px 5px 0 0">{{ item }}</el-tag>
@@ -261,6 +261,7 @@
       width: '',
       fileList: [],
       api: '',
+      note_prefix: 'note: ',
       form: {
         tag: '#kindle/《Eclectic》',
         delimiter: '------------------',
@@ -488,6 +489,7 @@
         formData.append("tag", this.form.tag);
         formData.append("delimiter", this.form.delimiter);
         formData.append("order", this.form.order);
+        formData.append("note_prefix", this.note_prefix);
         formData.append("note", item.note || '')
         formData.append("highlight", item.highlight || '');
         axios.post(url + '/post', formData, {

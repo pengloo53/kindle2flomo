@@ -10,12 +10,12 @@ import requests
 def format_data_to_content(data, order):
     if order == 'up':
         if data['note']:
-            content = data["tag"] + '\n' + data["highlight"] + '\n' + data["delimiter"] + '\n笔记：' + data["note"]
+            content = data["tag"] + '\n' + data["highlight"] + '\n' + data["delimiter"] + '\n' + data["note_prefix"] + data["note"]
         else:
             content = data["tag"] + '\n' + data["highlight"]
     elif order == 'down':
         if data['note']:
-            content = data["highlight"] + '\n' + data["delimiter"] + '\n笔记：' + data["note"] + '\n' + data['tag']
+            content = data["highlight"] + '\n' + data["delimiter"] + '\n' + data["note_prefix"] + data["note"] + '\n' + data['tag']
         else:
             content = data["highlight"] + '\n' + data['tag']
     return content
