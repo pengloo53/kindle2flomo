@@ -1,26 +1,28 @@
 # kindle2flomo
-上传 Kindle 笔记到 flomo。
+上传 Kindle 笔记到 flomo。  
 Upload Kindle notes to flomo.
 
-访问地址：http://kindle2flomo.90byte.com/index.html
+访问地址：http://kindle2flomo.90byte.com/index.html.   
 Visit URL: http://kindle2flomo.90byte.com/index_en.html
 
 ## V2.0
-提供更好的体验，帮助你整理读书笔记。
+提供更好的体验，帮助你整理读书笔记。  
 希望你能够「赏心悦目」的去做整理笔记这样「枯燥无味」的一件事情。
 
-It provides a better experience to help you organize your reading notes.
+![image](https://user-images.githubusercontent.com/5508125/128361215-df92de02-27d7-482c-84dd-2ed00245e53d.png)
+
+
+It provides a better experience to help you organize your reading notes.  
 We hope you can enjoy doing such a "boring" thing as organizing your notes.
 
-<img width="2044" alt="image" src="https://user-images.githubusercontent.com/5508125/127024184-defb3823-28c3-4f0c-a977-0759adadceb8.png">
+![image](https://user-images.githubusercontent.com/5508125/128361571-0fe01629-d9b0-409e-96bf-3bdcfc64ad31.png)
 
 ## 调用接口 (Calling interfaces)
-没有认证，没有负载，请温柔对待，尽量帮到有需要的人。
+没有认证，没有负载，请温柔对待，尽量帮到有需要的人。  
 No certification, no load, please be gentle and try to help those in need.
 
 ### 解析笔记 (Parse note files)
 
-请求：
 Request: 
 
 ```
@@ -31,8 +33,7 @@ Content-type: multipart/form-data
 }
 ```
 
-返回：
-return: 
+Return: 
 
 ```json
 {
@@ -56,7 +57,7 @@ return:
 ```
 
 ### 导入 flomo (Upload flomo)
-请求：
+
 Request: 
 
 ```
@@ -73,7 +74,6 @@ Content-type: multipart/form-data
 }
 ```
 
-返回：
 Return: 
 
 ```json
@@ -98,13 +98,10 @@ Return:
 ```
 
 ## 自己部署 (Deploy yourself)
-1. 进入 `server` 目录，启动 `app.py` 服务
-2. 修改 `index.html` 异步请求的地址
-3. 浏览器打开 `index.html` 即可
+1. 进入 `server` 目录，启动 `app.py` 服务。 (Go to the `server` directory and start the `app.py` service)
+2. 修改 `index.html` 异步请求的地址。 (Modify the address of `index.html` asynchronous request)
+3. 浏览器打开 `index.html` 即可。 (Open `index.html` in your browser)
 
-1. go to the `server` directory and start the `app.py` service
-2. Modify the address of `index.html` asynchronous request
-3. Open `index.html` in your browser
 
 
 ## 历史版本 (History version)
