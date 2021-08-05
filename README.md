@@ -2,7 +2,7 @@
 上传 Kindle 笔记到 flomo。  
 Upload Kindle notes to flomo.
 
-访问地址：http://kindle2flomo.90byte.com/index.html.   
+访问地址：http://kindle2flomo.90byte.com/index.html    
 Visit URL: http://kindle2flomo.90byte.com/index_en.html
 
 ## V2.0
