@@ -142,34 +142,32 @@
   <div id="app">
     <!-- aside -->
     <div v-if="asideVisable" class="aside">
-      <h2 style="color: #606266">kindle2flomo</h2>
+      <h2 style="color: #606266">Kindle2flomo</h2>
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
         :http-request="handleRequest" :on-preview="preview" :before-remove="beforeRemove" :on-change="uploadChange"
         :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">Upload Kindle Note Files</div>
+        <div class="el-upload__text">Upload Kindle note files</div>
         <div class="el-upload__tip" slot="tip">
-          <el-link type="info"
-            href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd"
-            target="_blank">How to get kindle note files?</el-link>
+          <el-link type="info" href="https://help.flomo.app/kindle2flomo/kindlenotefile" target="_blank">How to get Kindle note files?</el-link>
         </div>
       </el-upload>
       <div class="form">
         <el-divider><i class="el-icon-s-tools" style="color: #909399"> Customize</i></el-divider>
         <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
-          <el-form-item label="Tags (support multiple)" prop="tag">
-            <el-input v-model="form.tag" placeholder="Start with #, multiple labels separated by spaces" :clearable="true"></el-input>
+          <el-form-item label="Add tags" prop="tag">
+            <el-input v-model="form.tag" placeholder="Start with # (Separate tags with space)" :clearable="true"></el-input>
           </el-form-item>
-          <el-form-item label="Separator (between highlight and note)" prop="delimiter">
+          <el-form-item label="Set separator between highlight and note" prop="delimiter">
             <el-input v-model="form.delimiter" placeholder="Blank line by default" :clearable="true"></el-input>
           </el-form-item>
-          <el-form-item label="Tag position (below by default)" prop="order">
+          <el-form-item label="Switch tags to top (Bottom by default)" prop="order">
             <el-switch v-model="form.order" :content="form.order" active-value="up" inactive-value="down"
               change="switchChange"></el-switch>
           </el-form-item>
           <el-form-item>
             <el-popover placement="bottom" title="" width="520" trigger="click" @hide="saveApi">
-              <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
+              <el-input v-model="api" autocomplete="on" placeholder="Upload via API is PRO feature, please upgrade to PRO. Such as: https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
               <el-button slot="reference" icon="el-icon-setting" type="danger" size="small">Set up flomo API</el-button>
             </el-popover>
           </el-form-item>
@@ -209,7 +207,7 @@
           <span v-if="selectedCount">, selected {{ selectedCount }}</span>
         </small>
         <div class="op" style="display: inline;float: right;line-height: 1.8em;">
-          <el-link v-if="selectedCount > 1" :underline="false" type="primary" @click.native="postsome">Import</el-link>
+          <el-link v-if="selectedCount > 1" :underline="false" type="primary" @click.native="postsome">Upload to flomo</el-link>
         </div>
       </h2>
       <div ref="content" class="main-content" :style="{ 'height': height }">
@@ -394,7 +392,7 @@
       },
       saveApi() {
         if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
-          return this.$message.error('Please set the correct flomo API')
+          return this.$message.error('Please set up the correct flomo API')
         }
         this.$message.success('flomo API set up successfully')
       },
@@ -515,7 +513,7 @@
           return this.$message.error('Please set up flomo API');
         }
         if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
-          return this.$message.error('Please set the correct flomo API')
+          return this.$message.error('Please set up the correct flomo API')
         }
         if (item.saved) {
           return this.$message.info('The memo has been uploaded to flomo')
@@ -528,7 +526,7 @@
           return this.$message.error('Please set up flomo API');
         }
         if (!this.api.startsWith('https://flomoapp.com/iwh/')) {
-          return this.$message.error('Please set the correct flomo API')
+          return this.$message.error('Please set up the correct flomo API')
         }
         // params
         // 上传列表数据校验
