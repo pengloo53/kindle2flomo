@@ -7,38 +7,43 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <!-- import CSS -->
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-  <title>Kindle to Flomo</title>
+  <!-- iconfont -->
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_2701845_7hk2y21hi32.css">
+  <title>Kindle to flomo</title>
   <style>
-    @font-face {
-      font-family: 'iconfont';
-      /* Project id 2701845 */
-      src: url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.woff2?t=1627311898238') format('woff2'),
-        url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.woff?t=1627311898238') format('woff'),
-        url('https://at.alicdn.com/t/font_2701845_1813rdld8a6.ttf?t=1627311898238') format('truetype');
-    }
-
-    .iconfont {
-      font-family: "iconfont" !important;
-      font-size: 16px;
-      font-style: normal;
-      -webkit-font-smoothing: antialiased;
-      -webkit-text-stroke-width: 0.2px;
-      -moz-osx-font-smoothing: grayscale;
+    @media screen and (max-width: 500px) {
+      #app{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .main{
+        /* display:  none; */
+        max-width: 100%;
+      }
+      .middle{
+        /* display: none; */
+        margin: 0 !important;
+      }
+      .aside {
+        max-width: 100%;
+      }
+      .main-content{
+        display: flex;
+        flex-wrap: nowrap !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        height: 100% !important;
+      }
+      .main .el-card{
+        width: 100% !important
+      }
     }
 
     body {
       background-color: #FAFAFA;
     }
 
-    .el-divider__text {
-      background-color: #FAFAFA;
-    }
-
-    .el-tag {
-      padding: 0 4px;
-      line-height: 24px;
-      height: 24px;
-    }
 
     #app {
       display: flex;
@@ -55,9 +60,6 @@
       max-width: 1600px;
     }
 
-    .el-upload-list__item-name [class^=el-icon] {
-      height: auto
-    }
 
     .help ul {
       margin-top: 20px;
@@ -135,6 +137,21 @@
       margin: 20px 0 10px;
       font-size: 60px;
     }
+
+
+    .el-divider__text {
+      background-color: #FAFAFA;
+    }
+
+    .el-tag {
+      padding: 0 4px;
+      line-height: 24px;
+      height: 24px;
+    }
+
+    .el-upload-list__item-name [class^=el-icon] {
+      height: auto
+    }
   </style>
 </head>
 
@@ -155,7 +172,7 @@
         </div>
       </el-upload>
       <div class="form">
-        <el-divider><i class="el-icon-s-tools" style="color: #909399"> 自定义</i></el-divider>
+        <el-divider><i class="el-icon-s-tools" style="color: #909399"> 解析设置</i></el-divider>
         <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
           <el-form-item label="标签（支持多个哦）" prop="tag">
             <el-input v-model="form.tag" placeholder="开头 # 号，多个标签空格分隔" :clearable="true"></el-input>
@@ -167,17 +184,28 @@
             <el-switch v-model="form.order" :content="form.order" active-value="up" inactive-value="down"
               change="switchChange"></el-switch>
           </el-form-item>
+
+        <!-- <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 设置</i></el-divider> -->
           <el-form-item>
             <el-popover placement="bottom" title="" width="520" trigger="click" @hide="saveApi">
               <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
-              <el-button slot="reference" icon="el-icon-setting" type="danger" size="small">设置 API</el-button>
+              <el-button slot="reference" icon="el-icon-s-tools" type="danger" size="mini">设置 API</el-button>
             </el-popover>
           </el-form-item>
         </el-form>
       </div>
+      <!-- weread -->
+      <div class="weread">
+        <el-divider><i class="iconfont icon-weixin" style="color: #909399; font-size: 14px;"> 微信读书</i></el-divider>
+        <el-input type="textarea" :rows="6" :placeholder="placeholder" v-model="textarea">
+        </el-input>
+        <el-button size="mini" icon="el-icon-s-order" type="success" @click="parseWereadNotes" style="margin-top:10px">解析</el-button>
+        <el-button size="mini" icon="el-icon-circle-plus" type="primary">新建</el-button>
+        <el-button size="mini" icon="el-icon-circle-plus" type="warning">请求</el-button>
+      </div>
       <!-- 帮助 -->
       <div class="help">
-        <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 故事</i></el-divider>
+        <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 它的故事</i></el-divider>
         <ul style="list-style: none;">
           <li>
             <el-link type="info"
@@ -193,8 +221,8 @@
       </div>
     </div>
     <div class="middle" style="margin-top: 1.8em; margin-right: 1%;">
-      <el-link v-show="asideVisable" :underline="false" type="info" @click.native="hideAside"><i class="iconfont">&#xe659;</i></el-link>
-      <el-link v-show="!asideVisable" :underline="false" type="info" @click.native="showAside"><i class="iconfont">&#xe658;</i></el-link>
+      <el-link v-show="asideVisable" :underline="false" type="info" @click.native="hideAside"><i class="iconfont icon-zuojiantou-"></i></el-link>
+      <el-link v-show="!asideVisable" :underline="false" type="info" @click.native="showAside"><i class="iconfont icon-youjiantou"></i></el-link>
     </div>
     <!-- main -->
     <div v-if="result.length" class="main">
@@ -202,7 +230,7 @@
         <small style="font-size: medium">
           <span>共 {{ result.length }} 条笔记</span>
           <span v-if="savedCount">，已上传 {{ savedCount }} 条
-            <el-popover placement="top-start" title="" width="250" trigger="hover" content="Flomo 每天只支持上传 100 条 Memo">
+            <el-popover placement="top-start" title="" width="250" trigger="hover" content="flomo 每天只支持上传 100 条 Memo">
               <i style="color: #606266" class="el-icon-question" slot="reference"></i>
             </el-popover>
           </span>
@@ -255,8 +283,8 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/vue-clipboard2/0.3.1/vue-clipboard.min.js"></script>
 
 <script>
-  let url = 'http://kindle2flomo.90byte.com'
-  // let url = 'http://127.0.0.1:5000'
+  // let url = 'http://kindle2flomo.90byte.com'
+  let url = 'http://127.0.0.1:5000'
   let app = new Vue({
     el: '#app',
     data: {
@@ -365,7 +393,9 @@
       ],
       selectedCount: 0,
       savedCount: 0,
-      asideVisable: true
+      asideVisable: true,
+      textarea:'',
+      placeholder: '一个神奇的输入框。\n解析 -> 贴入微信读书笔记并解析；\n新建 -> 插入笔记到列表；\n请求 -> 贴入微信读书 Cookies，获取所有笔记'
     },
     mounted() {
       // var height = this.$refs.card[0].offsetHeight;
@@ -571,6 +601,27 @@
         for (var i = 0; i < data.length; i++) {
           this.post(data[i])
         }
+      },
+      // 读取微信读书笔记，并解析
+      parseWereadNotes(){
+        let formData = new FormData();
+        formData.append('data', this.textarea)
+        axios.post(url + '/parse_weixin', formData, {
+          "Content-Type": "multipart/form-data"
+        }).then(response => {
+          console.log(response);
+          // if (response.data.code == 0) {
+          //   this.$message.success('导入成功')
+          //   item.saved = true
+          //   item.selected = false
+          //   item.url = 'https://flomoapp.com/mine/?memo_id=' + response.data.memo.slug
+          //   this.flashCount();
+          // }else{
+          //   this.$message.error('导入失败：' + response.data.message + '，请检查 Flomo API 设置是否正确');
+          // }
+        }).catch(error => {
+          console.log(error);
+        });
       }
     }
   })

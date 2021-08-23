@@ -5,6 +5,7 @@ import json
 import time
 from kindle.parser import parse_csv_file, parse_html_file
 from poster import post_to_flomo, format_data_to_content
+from weread.parse_copy import parse_weixin_notes
 
 BASE_PATH = os.path.dirname(__file__)
 UPLOAD_FOLDER = './kindle/uploads'
@@ -61,6 +62,15 @@ def post():
             return post_to_flomo(content, api)
         else:
             return 'No api'
+
+
+# 解析微信笔记
+@app.route('/parse_weixin', methods=['POST'])
+def parse_weixin():
+    if request.method == 'POST':
+        data = request.form.get('data')
+        if data:
+            return parse_weixin_notes(data)
 
 
 if __name__ == '__main__':
