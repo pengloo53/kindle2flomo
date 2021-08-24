@@ -6,12 +6,26 @@ from bs4 import BeautifulSoup
 
 
 # 去除字符串中的空格
-def strip_space(string):
+def strip_space_old(string):
     new_string = ''
     for word in string:
         if word != ' ':
             new_string = new_string + word
     return new_string
+
+# 去除字符串中的空格，兼容中英文
+def strip_space(text):
+    match_regex = re.compile(
+        u'[\u4e00-\u9fa5。\.,，:：《》、\(\)（）]{1} +(?<![a-zA-Z])|\d+ +| +\d+|[a-z A-Z]+')
+    should_replace_list = match_regex.findall(text)
+    order_replace_list = sorted(
+        should_replace_list, key=lambda i: len(i), reverse=True)
+    for i in order_replace_list:
+        if i == u' ':
+            continue
+        new_i = i.strip()
+        text = text.replace(i, new_i)
+    return text
 
 
 # 判断是标注还是笔记
@@ -74,18 +88,23 @@ def parse_html_file(file_path):
         if len(div_noteHeading) == 0:
             for element in soup.body:
                 if element.name:    # 删除空字符串节点
-                    if element['class'][0] == 'bodyContainer':  # 第一个 noteHeading 莫名在 bodyContainer 下
+                    # 第一个 noteHeading 莫名在 bodyContainer 下
+                    if element['class'][0] == 'bodyContainer':
                         if len(element.h3.contents) == 1:
-                            result_arr.append(element.h3.contents[0].string.strip())
+                            result_arr.append(
+                                element.h3.contents[0].string.strip())
                         else:
-                            result_arr.append(element.h3.contents[0].string.strip() + element.h3.contents[2].string.strip())
+                            result_arr.append(element.h3.contents[0].string.strip(
+                            ) + element.h3.contents[2].string.strip())
                     elif element['class'][0] == 'noteText':
                         result_arr.append(element.contents[0].string.strip())
                         if element.h3:
                             if len(element.h3.contents) == 1:
-                                result_arr.append(element.h3.contents[0].string.strip())
+                                result_arr.append(
+                                    element.h3.contents[0].string.strip())
                             else:
-                                result_arr.append(element.h3.contents[0].string.strip() + element.h3.contents[2].string.strip())
+                                result_arr.append(element.h3.contents[0].string.strip(
+                                ) + element.h3.contents[2].string.strip())
         # Windows 阅读软件 和 手机导出
         else:
             div_arr = soup.select('div')
@@ -94,7 +113,8 @@ def parse_html_file(file_path):
                     if len(div.contents) == 1:
                         div_content = div.contents[0].string.strip()
                     else:
-                        div_content = div.contents[0].string.strip() + div.contents[2].string.strip()
+                        div_content = div.contents[0].string.strip(
+                        ) + div.contents[2].string.strip()
                     result_arr.append(div_content)
         # print(result_arr)
         # 位置+标注+笔记
