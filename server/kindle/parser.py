@@ -13,14 +13,16 @@ def strip_space_old(string):
             new_string = new_string + word
     return new_string
 
+
 # 去除字符串中的空格，兼容中英文
 def strip_space(text):
+    # match_regex = re.compile(u'[\u4e00-\u9fa5。，：《》、\(\)（）]{1} +(?<![a-zA-Z])|\d+ +| +\d+|[a-z A-Z]+')
     match_regex = re.compile(
-        u'[\u4e00-\u9fa5。\.,，:：《》、\(\)（）]{1} +(?<![a-zA-Z])|\d+ +| +\d+|[a-z A-Z]+')
+        u'[\u4e00-\u9fa5。，：《》、（）]{1} +(?<![a-zA-Z]\(\),;\')|\d+ +| +\d+|[a-z A-Z]\(\);,\'+')
     should_replace_list = match_regex.findall(text)
-    order_replace_list = sorted(
-        should_replace_list, key=lambda i: len(i), reverse=True)
-    for i in order_replace_list:
+    print(should_replace_list)
+    # order_replace_list = sorted(should_replace_list,key=lambda i:len(i),reverse=True)
+    for i in should_replace_list:
         if i == u' ':
             continue
         new_i = i.strip()
