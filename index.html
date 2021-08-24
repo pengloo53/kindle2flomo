@@ -45,6 +45,7 @@
     }
 
     body {
+      font-family: 'DIN-Regular', 'PingFang SC', Helvetica, Arial, sans-serif;
       background-color: #FAFAFA;
     }
 
@@ -514,8 +515,8 @@
             "Content-Type": "multipart/form-data"
           })
             .then(response => {
-              this.book_title = response.data.book_title
-              this.form.tag = "#kindle/《" + response.data.book_title + "》"
+              this.book_title = response.data.book_title.split(' ').join('_')
+              this.form.tag = "#kindle/《" + this.book_title + "》"
               this.result = response.data.result
               this.show = true
               this.$nextTick(() => {
