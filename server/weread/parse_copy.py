@@ -25,8 +25,8 @@ def parse_weixin_notes(data):
         if line and index > 2:
             if line.startswith('◆'):
                 place = line[2:]
-            if line.startswith('>>'):
-                highlight = line[3:]
+            if line.startswith('>'):
+                highlight = line[2:].strip()
                 if data_arr[index-1]:
                     note = data_arr[index-1]
                     result_json.append({
