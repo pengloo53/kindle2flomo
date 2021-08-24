@@ -21,7 +21,6 @@ def parse_weixin_notes(data):
     author = data_arr[1]
     # 取位置、标注和笔记
     place = ''
-    note = ''
     for index, line in enumerate(data_arr):
         if line and index > 2:
             if line.startswith('◆'):
@@ -30,12 +29,16 @@ def parse_weixin_notes(data):
                 highlight = line[3:]
                 if data_arr[index-1]:
                     note = data_arr[index-1]
-                result_json.append({
-                    "place": place,
-                    "highlight": highlight,
-                    "note": note
-                })
-            note = ''
+                    result_json.append({
+                        "place": place,
+                        "highlight": highlight,
+                        "note": note
+                    })
+                else:
+                    result_json.append({
+                        "place": place,
+                        "highlight": highlight
+                    })
     return {
         "book_title": title,
         "book_author": author,
