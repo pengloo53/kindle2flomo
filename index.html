@@ -26,7 +26,7 @@
         margin: 0 !important;
       }
       .aside {
-        max-width: 100%;
+        max-width: 100% !important;
       }
       .main-content{
         display: flex;
@@ -37,6 +37,10 @@
       }
       .main .el-card{
         width: 100% !important
+      }
+      .op{
+        float: none !important;
+        line-height: 1em !important;
       }
     }
 
@@ -160,6 +164,7 @@
     <!-- aside -->
     <div v-if="asideVisable" class="aside">
       <h2 style="color: #606266">kindle2flomo</h2>
+      <!-- kindle note uploader -->
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
         :http-request="handleRequest" :on-preview="preview" :on-change="uploadChange"
         :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
@@ -168,9 +173,18 @@
         <div class="el-upload__tip" slot="tip">
           <el-link type="info"
             href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198191&idx=1&sn=95c506dde4a079d2840a91b12ca358a8&chksm=be5734e68920bdf04af5ad5f31d8c40acea17e723b1b0eeaa2d3d47d009a0adc5abca44bc953&token=1351484622&lang=zh_CN#rd"
-            target="_blank">不知道怎么获取笔记？</el-link>
+            target="_blank">不知道怎么获取 Kindle 笔记？</el-link>
         </div>
       </el-upload>
+      <!-- weread input -->
+      <div class="weread">
+        <el-divider><i class="iconfont icon-weixin" style="color: #909399; font-size: 14px;"> 微信读书</i></el-divider>
+        <el-input type="textarea" :rows="6" :placeholder="placeholder" v-model="textarea">
+        </el-input>
+        <el-button size="mini" icon="el-icon-s-order" type="success" @click="parseWereadNotes" style="margin-top:10px">解析</el-button>
+        <!-- <el-button size="mini" icon="el-icon-circle-plus" type="primary">新建</el-button> -->
+        <!-- <el-button size="mini" icon="el-icon-circle-plus" type="warning">请求</el-button> -->
+      </div>
       <div class="form">
         <el-divider><i class="el-icon-s-tools" style="color: #909399"> 解析设置</i></el-divider>
         <el-form :model="form" :rules="rule" ref="form" label-position="top" label-width="100px" class="demo-ruleForm">
@@ -184,7 +198,6 @@
             <el-switch v-model="form.order" :content="form.order" active-value="up" inactive-value="down"
               change="switchChange"></el-switch>
           </el-form-item>
-
         <!-- <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 设置</i></el-divider> -->
           <el-form-item>
             <el-popover placement="bottom" title="" width="520" trigger="click" @hide="saveApi">
@@ -194,15 +207,7 @@
           </el-form-item>
         </el-form>
       </div>
-      <!-- weread -->
-      <div class="weread">
-        <el-divider><i class="iconfont icon-weixin" style="color: #909399; font-size: 14px;"> 微信读书</i></el-divider>
-        <el-input type="textarea" :rows="6" :placeholder="placeholder" v-model="textarea">
-        </el-input>
-        <el-button size="mini" icon="el-icon-s-order" type="success" @click="parseWereadNotes" style="margin-top:10px">解析</el-button>
-        <el-button size="mini" icon="el-icon-circle-plus" type="primary">新建</el-button>
-        <el-button size="mini" icon="el-icon-circle-plus" type="warning">请求</el-button>
-      </div>
+
       <!-- 帮助 -->
       <div class="help">
         <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 它的故事</i></el-divider>
@@ -395,7 +400,8 @@
       savedCount: 0,
       asideVisable: true,
       textarea:'',
-      placeholder: '一个神奇的输入框。\n解析 -> 贴入微信读书笔记并解析；\n新建 -> 插入笔记到列表；\n请求 -> 贴入微信读书 Cookies，获取所有笔记'
+      // placeholder: '一个神奇的输入框。\n解析 -> 贴入微信读书笔记并解析；\n新建 -> 插入笔记到列表；\n请求 -> 贴入微信读书 Cookies，获取所有笔记'
+      placeholder: '1. 打开微信读书笔记，点击导出，复制到剪贴板\n2. 粘贴到此处\n3. 点击解析按钮'
     },
     mounted() {
       // var height = this.$refs.card[0].offsetHeight;
@@ -610,15 +616,16 @@
           "Content-Type": "multipart/form-data"
         }).then(response => {
           console.log(response);
-          // if (response.data.code == 0) {
-          //   this.$message.success('导入成功')
-          //   item.saved = true
-          //   item.selected = false
-          //   item.url = 'https://flomoapp.com/mine/?memo_id=' + response.data.memo.slug
-          //   this.flashCount();
-          // }else{
-          //   this.$message.error('导入失败：' + response.data.message + '，请检查 Flomo API 设置是否正确');
-          // }
+          if (response.data.result.length == 0) {
+            return this.$message.error('输入有误，解析失败')
+          }
+          this.book_title = response.data.book_title.split(' ').join('_')
+          this.form.tag = "#kindle/《" + this.book_title.split('：')[0] + "》"
+          this.result = response.data.result
+          this.show = true
+          this.$nextTick(() => {
+            this.setHeight();
+          })
         }).catch(error => {
           console.log(error);
         });
