@@ -138,14 +138,6 @@
       border: 1px solid #67C23A;
     }
 
-    .showOp {
-      display: block;
-    }
-
-    .hideOp {
-      display: none;
-    }
-
     .el-upload-dragger {
       width: 280px;
       height: 140px;
@@ -266,12 +258,11 @@
       </h2>
       <div ref="content" class="main-content" :style="{ 'height': height }">
         <el-card ref="card" shadow="hover" v-for="(item,index) in result" :key="index"
-          @click.native="clickCard(item,index)" @mouseover.native="overCard(item,index)"
-          @mouseleave.native="leaveCard(item,index)" :class="{ selected: item.selected, saved: item.saved }">
+          @click.native="clickCard(item,index)" :class="{ selected: item.selected, saved: item.saved }">
           <div class="memo_header" style="margin-bottom: 5px;">
             <span style="font-size:12px; color:#909399;">{{ item.place }}
-              <div style="float: right;">
-                <el-dropdown>
+              <div style="float: right;" @click.stop>
+                <el-dropdown trigger="click" size='mini'>
                   <span class="el-dropdown-link"><i class="el-icon-more el-icon--right"></i></span>
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item v-if="!item.saved" icon="el-icon-upload" @click.native.stop="postone(item)">导入 flomo</el-dropdown-item>
@@ -280,21 +271,13 @@
                   </el-dropdown-menu>
                 </el-dropdown>
               </div>
-              <!-- <div :class="[ item.showOp? 'showOp' : 'hideOp' ]" style="float: right;">
-                <el-link v-if="!item.saved" :underline="false" icon="el-icon-upload" type="primary"
-                  @click.native.stop="postone(item)" title="导入Flomo"></el-link>
-                <el-link v-if="!item.saved" :underline="false" icon="el-icon-delete" type="danger"
-                  @click.native.stop="del(item,index)" title="删除"></el-link>
-                <el-link v-if="item.saved" :underline="false" icon="el-icon-copy-document" type="success"
-                  @click.native.stop="copyLink(item)" title="复制链接"></el-link>
-              </div> -->
             </span>
           </div>
           <span v-if="form.order == 'up'" v-for="(item, index) in form.tag.split(' ')" :key="index">
             <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 0 5px 3px 0">{{ item }}</el-tag>
           </span>
           <p>{{ item.highlight }}</p>
-          <div v-if="item.note">
+          <div v-if="item.note && item.note.replace(/[\n\r]/g, '')">
             <p>{{ form.delimiter }}</p>
             <p type="info"><b>{{ note_prefix }}{{ item.note }}</b></p>
           </div>
@@ -489,14 +472,6 @@
       },
       hideAside() {
         this.asideVisable = false;
-      },
-      overCard(item, index) {
-        item.showOp = true
-        this.result.splice(index, 1, item)
-      },
-      leaveCard(item, index) {
-        item.showOp = false
-        this.result.splice(index, 1, item)
       },
       clickCard(item, index) {
         if (!item.saved) {
