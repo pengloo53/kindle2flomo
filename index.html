@@ -12,33 +12,43 @@
   <title>Kindle to flomo</title>
   <style>
     @media screen and (max-width: 500px) {
-      #app{
+      #app {
         display: flex;
         flex-direction: column;
         align-items: center;
       }
-      .main{
+
+      .main {
         /* display:  none; */
         max-width: 100%;
       }
-      .middle{
+
+      .middle {
         /* display: none; */
         margin: 0 !important;
       }
+
       .aside {
         max-width: 100% !important;
       }
-      .main-content{
+
+      .weread {
+        display: block !important;
+      }
+
+      .main-content {
         display: flex;
         flex-wrap: nowrap !important;
         flex-direction: column !important;
         align-items: center !important;
         height: 100% !important;
       }
-      .main .el-card{
+
+      .main .el-card {
         width: 100% !important
       }
-      .op{
+
+      .op {
         float: none !important;
         line-height: 1em !important;
       }
@@ -65,6 +75,9 @@
       max-width: 1600px;
     }
 
+    .weread {
+      display: none;
+    }
 
     .help ul {
       margin-top: 20px;
@@ -167,8 +180,8 @@
       <h2 style="color: #606266">kindle2flomo</h2>
       <!-- kindle note uploader -->
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
-        :http-request="handleRequest" :on-preview="preview" :on-change="uploadChange"
-        :on-success="uploadSuccess" :on-exceed="exceed" :limit="10000" accept=".csv, .html">
+        :http-request="handleRequest" :on-preview="preview" :on-change="uploadChange" :on-success="uploadSuccess"
+        :on-exceed="exceed" :limit="10000" accept=".csv, .html">
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">上传 Kindle 笔记，支持多选</div>
         <div class="el-upload__tip" slot="tip">
@@ -182,7 +195,8 @@
         <el-divider><i class="iconfont icon-weixin" style="color: #909399; font-size: 14px;"> 微信读书</i></el-divider>
         <el-input type="textarea" :rows="6" :placeholder="placeholder" v-model="textarea">
         </el-input>
-        <el-button size="mini" icon="el-icon-s-order" type="success" @click="parseWereadNotes" style="margin-top:10px">解析</el-button>
+        <el-button size="mini" icon="el-icon-s-order" type="success" @click="parseWereadNotes" style="margin-top:10px">
+          解析</el-button>
         <!-- <el-button size="mini" icon="el-icon-circle-plus" type="primary">新建</el-button> -->
         <!-- <el-button size="mini" icon="el-icon-circle-plus" type="warning">请求</el-button> -->
       </div>
@@ -199,7 +213,7 @@
             <el-switch v-model="form.order" :content="form.order" active-value="up" inactive-value="down"
               change="switchChange"></el-switch>
           </el-form-item>
-        <!-- <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 设置</i></el-divider> -->
+          <!-- <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 设置</i></el-divider> -->
           <el-form-item>
             <el-popover placement="bottom" title="" width="520" trigger="click" @hide="saveApi">
               <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
@@ -209,7 +223,7 @@
         </el-form>
       </div>
 
-      <!-- 帮助 -->
+      <!-- aside: 帮助 -->
       <div class="help">
         <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 它的故事</i></el-divider>
         <ul style="list-style: none;">
@@ -226,9 +240,12 @@
         </ul>
       </div>
     </div>
+    <!-- middle -->
     <div class="middle" style="margin-top: 1.8em; margin-right: 1%;">
-      <el-link v-show="asideVisable" :underline="false" type="info" @click.native="hideAside"><i class="iconfont icon-zuojiantou-"></i></el-link>
-      <el-link v-show="!asideVisable" :underline="false" type="info" @click.native="showAside"><i class="iconfont icon-youjiantou"></i></el-link>
+      <el-link v-show="asideVisable" :underline="false" type="info" @click.native="hideAside"><i
+          class="iconfont icon-zuojiantou-"></i></el-link>
+      <el-link v-show="!asideVisable" :underline="false" type="info" @click.native="showAside"><i
+          class="iconfont icon-youjiantou"></i></el-link>
     </div>
     <!-- main -->
     <div v-if="result.length" class="main">
@@ -249,19 +266,29 @@
       </h2>
       <div ref="content" class="main-content" :style="{ 'height': height }">
         <el-card ref="card" shadow="hover" v-for="(item,index) in result" :key="index"
-          @click.native="clickCard(item,index)"
-          @mouseover.native="overCard(item,index)"
-          @mouseleave.native="leaveCard(item,index)"
-          :class="{ selected: item.selected, saved: item.saved }"
-          >
+          @click.native="clickCard(item,index)" @mouseover.native="overCard(item,index)"
+          @mouseleave.native="leaveCard(item,index)" :class="{ selected: item.selected, saved: item.saved }">
           <div class="memo_header" style="margin-bottom: 5px;">
             <span style="font-size:12px; color:#909399;">{{ item.place }}
-            <div :class="[ item.showOp? 'showOp' : 'hideOp' ]" style="float: right;">
-              <el-link v-if="!item.saved" :underline="false" icon="el-icon-upload" type="primary" @click.native.stop="postone(item)" title="导入Flomo"></el-link>
-              <el-link v-if="!item.saved" :underline="false" icon="el-icon-delete" type="danger" @click.native.stop="del(item,index)" title="删除"></el-link>
-              <el-link v-if="item.saved" :underline="false" icon="el-icon-copy-document" type="success" @click.native.stop="copyLink(item)" title="复制链接"></el-link>
-            </div>
-          </span>
+              <div style="float: right;">
+                <el-dropdown>
+                  <span class="el-dropdown-link"><i class="el-icon-more el-icon--right"></i></span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item v-if="!item.saved" icon="el-icon-upload" @click.native.stop="postone(item)">导入 flomo</el-dropdown-item>
+                    <el-dropdown-item v-if="item.saved" icon="el-icon-copy-document" @click.native.stop="copyLink(item)">复制链接</el-dropdown-item>
+                    <el-dropdown-item v-if="!item.saved" icon="el-icon-delete" @click.native.stop="del(item,index)" divided>删除</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </div>
+              <!-- <div :class="[ item.showOp? 'showOp' : 'hideOp' ]" style="float: right;">
+                <el-link v-if="!item.saved" :underline="false" icon="el-icon-upload" type="primary"
+                  @click.native.stop="postone(item)" title="导入Flomo"></el-link>
+                <el-link v-if="!item.saved" :underline="false" icon="el-icon-delete" type="danger"
+                  @click.native.stop="del(item,index)" title="删除"></el-link>
+                <el-link v-if="item.saved" :underline="false" icon="el-icon-copy-document" type="success"
+                  @click.native.stop="copyLink(item)" title="复制链接"></el-link>
+              </div> -->
+            </span>
           </div>
           <span v-if="form.order == 'up'" v-for="(item, index) in form.tag.split(' ')" :key="index">
             <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 0 5px 3px 0">{{ item }}</el-tag>
@@ -400,7 +427,7 @@
       selectedCount: 0,
       savedCount: 0,
       asideVisable: true,
-      textarea:'',
+      textarea: '',
       // placeholder: '一个神奇的输入框。\n解析 -> 贴入微信读书笔记并解析；\n新建 -> 插入笔记到列表；\n请求 -> 贴入微信读书 Cookies，获取所有笔记'
       placeholder: '1. 打开微信读书笔记，点击导出，复制到剪贴板\n2. 粘贴到此处\n3. 点击解析按钮'
     },
@@ -417,15 +444,15 @@
     },
     methods: {
       // 刷新 count
-      flashCount(){
+      flashCount() {
         savedCount = 0;
-        selectedCount = 0 ;
-        this.result.forEach((item, index)=>{
-          if(item.selected){
-            selectedCount ++;
+        selectedCount = 0;
+        this.result.forEach((item, index) => {
+          if (item.selected) {
+            selectedCount++;
           }
-          if(item.saved){
-            savedCount ++;
+          if (item.saved) {
+            savedCount++;
           }
         })
         this.selectedCount = selectedCount;
@@ -472,7 +499,7 @@
         this.result.splice(index, 1, item)
       },
       clickCard(item, index) {
-        if(!item.saved){
+        if (!item.saved) {
           item.selected = !item.selected
           this.result.splice(index, 1, item)
           if (item.selected) {
@@ -539,7 +566,7 @@
         })
       },
       // 删除
-      del(item, index){
+      del(item, index) {
         this.result.splice(index, 1)
         this.flashCount();
       },
@@ -562,7 +589,7 @@
             item.selected = false
             item.url = 'https://flomoapp.com/mine/?memo_id=' + response.data.memo.slug
             this.flashCount();
-          }else{
+          } else {
             this.$message.error('导入失败：' + response.data.message + '，请检查 Flomo API 设置是否正确');
           }
         }).catch(error => {
@@ -610,7 +637,7 @@
         }
       },
       // 读取微信读书笔记，并解析
-      parseWereadNotes(){
+      parseWereadNotes() {
         let formData = new FormData();
         formData.append('data', this.textarea)
         axios.post(url + '/parse_weixin', formData, {
