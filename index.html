@@ -30,6 +30,7 @@
 
       .aside {
         max-width: 100% !important;
+        width: 100% !important;
       }
 
       .weread {
@@ -52,18 +53,26 @@
         float: none !important;
         line-height: 1em !important;
       }
+
+      .el-upload {
+        width: 100% !important;
+      }
+      .el-upload-dragger {
+        width: 100% !important;
+      }
     }
 
     body {
       font-family: 'DIN-Regular', 'PingFang SC', Helvetica, Arial, sans-serif;
       background-color: #FAFAFA;
+      margin: 0;
     }
 
 
     #app {
       display: flex;
       justify-content: center;
-      padding: 0 2%;
+      padding: 0 5%;
     }
 
     .aside {
@@ -169,7 +178,7 @@
   <div id="app">
     <!-- aside -->
     <div v-if="asideVisable" class="aside">
-      <h2 style="color: #606266">kindle2flomo</h2>
+      <h2 style="color: #606266">Kindle2flomo</h2>
       <!-- kindle note uploader -->
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
         :http-request="handleRequest" :on-preview="preview" :on-change="uploadChange" :on-success="uploadSuccess"
@@ -187,7 +196,7 @@
         <el-divider><i class="iconfont icon-weixin" style="color: #909399; font-size: 14px;"> 微信读书</i></el-divider>
         <el-input type="textarea" :rows="6" :placeholder="placeholder" v-model="textarea">
         </el-input>
-        <el-button size="mini" icon="el-icon-s-order" type="success" @click="parseWereadNotes" style="margin-top:10px">
+        <el-button size="small" icon="el-icon-s-order" type="success" @click="parseWereadNotes" style="margin-top:10px;width: 100%">
           解析</el-button>
         <!-- <el-button size="mini" icon="el-icon-circle-plus" type="primary">新建</el-button> -->
         <!-- <el-button size="mini" icon="el-icon-circle-plus" type="warning">请求</el-button> -->
@@ -204,13 +213,6 @@
           <el-form-item label="标签位置（默认下面）" prop="order">
             <el-switch v-model="form.order" :content="form.order" active-value="up" inactive-value="down"
               change="switchChange"></el-switch>
-          </el-form-item>
-          <!-- <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 设置</i></el-divider> -->
-          <el-form-item>
-            <el-popover placement="bottom" title="" width="520" trigger="click" @hide="saveApi">
-              <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
-              <el-button slot="reference" icon="el-icon-s-tools" type="danger" size="mini">设置 API</el-button>
-            </el-popover>
           </el-form-item>
         </el-form>
       </div>
@@ -230,6 +232,16 @@
               target="_blank">2. 想了解它的实现过程？</el-link>
           </li>
         </ul>
+      </div>
+      <!-- set up api -->
+      <div class="api">
+        <!-- <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 设置 API</i></el-divider> -->
+        <!-- <el-form-item> -->
+          <el-popover placement="bottom" title="" width="300" trigger="click" @hide="saveApi">
+            <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
+            <el-button style="width: 100%;margin-bottom: 5%" slot="reference" icon="el-icon-s-tools" type="danger" size="small">设置 API</el-button>
+          </el-popover>
+        <!-- </el-form-item> -->  
       </div>
     </div>
     <!-- middle -->
@@ -262,7 +274,7 @@
           <div class="memo_header" style="margin-bottom: 5px;">
             <span style="font-size:12px; color:#909399;">{{ item.place }}
               <div style="float: right;" @click.stop>
-                <el-dropdown trigger="click" size='mini'>
+                <el-dropdown trigger="click" size='small'>
                   <span class="el-dropdown-link"><i class="el-icon-more el-icon--right"></i></span>
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item v-if="!item.saved" icon="el-icon-upload" @click.native.stop="postone(item)">导入 flomo</el-dropdown-item>
