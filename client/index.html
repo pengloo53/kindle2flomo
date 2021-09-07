@@ -45,6 +45,10 @@
         height: 100% !important;
       }
 
+      .qrcode {
+        text-align: center;
+      }
+
       .main .el-card {
         width: 100% !important
       }
@@ -179,7 +183,7 @@
   <div id="app">
     <!-- aside -->
     <div v-if="asideVisable" class="aside">
-      <h2 style="color: #606266">Kindle2flomo</h2>
+      <h2 style="color: #606266" title="九零字节出品">Kindle2flomo</h2>
       <!-- kindle note uploader -->
       <el-upload class="upload-demo" drag action="#" :multiple="true" :file-list="fileList"
         :http-request="handleRequest" :on-preview="preview" :on-change="uploadChange" :on-success="uploadSuccess"
@@ -218,7 +222,17 @@
           </el-form-item>
         </el-form>
       </div>
-
+      <!-- set up api -->
+      <div class="api">
+        <!-- <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 设置 API</i></el-divider> -->
+        <!-- <el-form-item> -->
+        <el-popover placement="bottom" title="" width="300" trigger="click" @hide="saveApi">
+          <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
+          <el-button style="width: 100%;margin-bottom: 5%" slot="reference" icon="el-icon-s-tools" type="danger"
+            size="small">设置 API</el-button>
+        </el-popover>
+        <!-- </el-form-item> -->
+      </div>
       <!-- aside: 帮助 -->
       <div class="help">
         <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 它的故事</i></el-divider>
@@ -234,17 +248,14 @@
               target="_blank">2. 想了解它的实现过程？</el-link>
           </li>
         </ul>
+        <div class="qrcode">
+          <img style="width: 50%;" src="http://img.90byte.com/weixin/weixin_qrcode.jpg"></img>
+        </div>
       </div>
-      <!-- set up api -->
-      <div class="api">
-        <!-- <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 设置 API</i></el-divider> -->
-        <!-- <el-form-item> -->
-        <el-popover placement="bottom" title="" width="300" trigger="click" @hide="saveApi">
-          <el-input v-model="api" autocomplete="on" placeholder="https://flomoapp.com/iwh/xxxxxxxxx"></el-input>
-          <el-button style="width: 100%;margin-bottom: 5%" slot="reference" icon="el-icon-s-tools" type="danger"
-            size="small">设置 API</el-button>
-        </el-popover>
-        <!-- </el-form-item> -->
+      <!-- aside：其他 -->
+      <div class="others">
+        <el-divider><i class="el-icon-menu" style="color: #909399"> 其他工具</i></el-divider>
+        <el-link type="primary" href="http://md2wechat.90byte.com/index.html" target="_blank">微信公众号 Markdown 编辑器</el-link>
       </div>
     </div>
     <!-- middle -->
