@@ -7,7 +7,7 @@ def parse_weixin_notes(data):
         return {
             "result": []
         }
-    # 测试微信读书笔记，结论：微信读书笔记存在重复项
+    # 测试微信读书笔记，结论：微信读书笔记存在重复项，安卓和苹果设备，对于带有note的笔记标识符不一样，安卓：> 苹果：>> 
     # test_arr = []
     # for line in data_arr:
     #     if line and line.startswith('>>'):
@@ -25,8 +25,10 @@ def parse_weixin_notes(data):
         if line and index > 2:
             if line.startswith('◆'):
                 place = line[2:]
-            if line.startswith('>'):
-                highlight = line[2:].strip()
+            if line.startswith('>'): #安卓手机笔记
+                highlight = line[1:].strip()
+                if highlight.startswith('>'): #苹果手机笔记
+                    highlight = highlight[1:].strip()
                 if data_arr[index-1]:
                     note = data_arr[index-1]
                     result_json.append({
