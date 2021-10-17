@@ -50,9 +50,9 @@
             <el-form-item label="标签（支持多个哦）" prop="tag">
               <el-input v-model="form.tag" placeholder="开头 # 号，多个标签空格分隔" :clearable="true"></el-input>
             </el-form-item>
-            <el-form-item label="分隔符（标注与笔记之间）" prop="delimiter">
+            <!-- <el-form-item label="分隔符（标注与笔记之间）" prop="delimiter">
               <el-input v-model="form.delimiter" placeholder="默认空一行" :clearable="true"></el-input>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="标签位置（默认下面）" prop="order">
               <el-switch v-model="form.order" :content="form.order" active-value="up" inactive-value="down"
                 change="switchChange"></el-switch>
@@ -131,6 +131,7 @@
                     <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item v-if="!item.saved" icon="el-icon-upload" @click.native.stop="postone(item)">导入
                         flomo</el-dropdown-item>
+                      <el-dropdown-item v-if="!item.saved" icon="el-icon-edit-outline" @click.native.stop="edit(item)">编辑</el-dropdown-item>
                       <el-dropdown-item v-if="item.saved" icon="el-icon-copy-document"
                         @click.native.stop="copyLink(item)">复制链接</el-dropdown-item>
                       <el-dropdown-item v-if="!item.saved" icon="el-icon-delete" @click.native.stop="del(item,index)"
@@ -143,10 +144,12 @@
             <span v-if="form.order == 'up'" v-for="(item, index) in form.tag.split(' ')" :key="index">
               <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 0 5px 3px 0">{{ item }}</el-tag>
             </span>
-            <p>{{ item.highlight }}</p>
-            <div v-if="item.note && item.note.replace(/[\n\r]/g, '')">
-              <p>{{ form.delimiter }}</p>
-              <p type="info"><b>{{ note_prefix }}{{ item.note }}</b></p>
+            <div class="note" v-if="item.note && item.note.replace(/[\n\r]/g, '')">
+              <p><b>{{ item.note }}</b></p>
+              <!-- <p>{{ form.delimiter }}</p> -->
+            </div>
+            <div class="highlight">
+              <p>{{ item.highlight }}</p>
             </div>
             <span v-if="form.order == 'down'" v-for="(item, index) in form.tag.split(' ')" :key="index">
               <el-tag v-if="item && item.split('')[0] == '#'" style="margin: 3px 5px 0 0">{{ item }}</el-tag>
@@ -157,10 +160,9 @@
     </div>
     <!-- footer -->
     <div class="beian">
-      <el-divider><i style="color: #909399">
-        <el-link type="info" href="https://beian.miit.gov.cn/" target="_blank">京ICP备17071687号-2</el-link></i>
-      </el-divider>
+        <el-link type="info" href="https://beian.miit.gov.cn/" target="_blank">京ICP备17071687号-2</el-link>
     </div>
+    <!--  -->
   </div>
 </body>
 <!-- import Vue before Element -->

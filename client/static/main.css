@@ -37,7 +37,7 @@
   }
 
   .main .el-card {
-    width: 100% !important
+    width: 100% !important;
   }
 
   .op {
@@ -112,10 +112,31 @@ body {
   font-size: 14px;
   color: #606266;
   /* min-width: 300px; */
+  /* height: 140px; */
 }
 
 .main .el-card .el-card__body {
   padding: 10px 15px;
+}
+
+/* .el-card .memo_content {
+  height: 80px;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.8;
+} */
+
+.highlight{
+  padding: 5px 15px;
+  background-color:#fafafa;
+  border-left: 3px solid #ddd;
+  margin: 5px 0;
+}
+
+.note{
+  margin-bottom: 5px;
 }
 
 /* 将内容块重排为3列 */
@@ -162,4 +183,10 @@ body {
 
 .el-upload-list__item-name [class^=el-icon] {
   height: auto
+}
+
+.beian{
+  font-size: 0.9em;
+  text-align: center;
+  margin-bottom: 30px;
 }

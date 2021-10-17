@@ -8,9 +8,10 @@ let app = new Vue({
         fileList: [],
         api: '',
         note_prefix: '笔记：',
+        highlight_prefix: '标注：',
         form: {
             tag: '#kindle/《不拘一格》',
-            delimiter: '------------------',
+            delimiter: '',
             order: 'down'
         },
         rule: {
@@ -293,7 +294,8 @@ let app = new Vue({
             formData.append("tag", this.form.tag);
             formData.append("delimiter", this.form.delimiter);
             formData.append("order", this.form.order);
-            formData.append("note_prefix", this.note_prefix)
+            formData.append("note_prefix", this.note_prefix);
+            formData.append("highlight_prefix", this.highlight_prefix);
             formData.append("note", item.note || '')
             formData.append("highlight", item.highlight || '');
             axios.post(url + '/post', formData, {
