@@ -49,6 +49,7 @@ def post():
         delimiter = request.form.get('delimiter') or ''
         highlight = request.form.get('highlight') or ''
         note_prefix = request.form.get('note_prefix')
+        highlight_prefix = request.form.get('highlight_prefix')
         note = request.form.get('note') or ''
         order = request.form.get('order')
         content = format_data_to_content({
@@ -56,6 +57,7 @@ def post():
             'delimiter': delimiter,
             'note_prefix': note_prefix,
             'note': note,
+            'highlight_prefix': highlight_prefix,
             'highlight': highlight
         }, order)
         if api:

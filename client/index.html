@@ -131,7 +131,7 @@
                     <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item v-if="!item.saved" icon="el-icon-upload" @click.native.stop="postone(item)">导入
                         flomo</el-dropdown-item>
-                      <el-dropdown-item v-if="!item.saved" icon="el-icon-edit-outline" @click.native.stop="edit(item)">编辑</el-dropdown-item>
+                      <!-- <el-dropdown-item v-if="!item.saved" icon="el-icon-edit-outline" @click.native.stop="edit(item)">编辑</el-dropdown-item> -->
                       <el-dropdown-item v-if="item.saved" icon="el-icon-copy-document"
                         @click.native.stop="copyLink(item)">复制链接</el-dropdown-item>
                       <el-dropdown-item v-if="!item.saved" icon="el-icon-delete" @click.native.stop="del(item,index)"
