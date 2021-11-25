@@ -40,7 +40,7 @@ def parse():
     return jsonify(result)
 
 
-# 导入 MEMO (单条)
+# 导入读书笔记到 flomo
 @app.route('/post', methods=['POST'])
 def post():
     if request.method == 'POST':
@@ -48,10 +48,10 @@ def post():
         tag = request.form.get('tag') or ''
         delimiter = request.form.get('delimiter') or ''
         highlight = request.form.get('highlight') or ''
-        note_prefix = request.form.get('note_prefix')
-        highlight_prefix = request.form.get('highlight_prefix')
+        note_prefix = request.form.get('note_prefix') or ''
+        highlight_prefix = request.form.get('highlight_prefix') or ''
         note = request.form.get('note') or ''
-        order = request.form.get('order')
+        order = request.form.get('order') or 'down'
         content = format_data_to_content({
             'tag': tag,
             'delimiter': delimiter,
@@ -63,6 +63,17 @@ def post():
         if api:
             return post_to_flomo(content, api)
         else:
+            return 'No api'
+
+# 导入编辑的内容到 flomo
+@app.route('/post_single', methods=['POST'])
+def post_single():
+    if request.method == 'POST':
+        api = request.form.get('api')
+        content = request.form.get('content')
+        if api:
+            return post_to_flomo(content, api)
+        else: 
             return 'No api'
 
 

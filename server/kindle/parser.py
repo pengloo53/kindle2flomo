@@ -1,4 +1,4 @@
-# 作者：鲁鹏
+# 作者：lupeng
 # Kindle 笔记文件解析，支持 csv 和 html 文件
 # 解析内容：标注，笔记，标题
 import re
