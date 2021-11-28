@@ -174,22 +174,6 @@
           </el-form-item>
         </el-form>
       </div>
-      <!-- 帮助 -->
-      <!-- <div class="help">
-        <el-divider><i class="el-icon-s-opportunity" style="color: #909399"> 故事</i></el-divider>
-        <ul style="list-style: none;">
-          <li>
-            <el-link type="info"
-              href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198220&idx=1&sn=5d0fecf4d3a4ab1469724292dad9797d&chksm=be5734058920bd13ac17f149d7a54dd01b17a066d70f55a813ebb338075b6837f6c6605b255b&token=1351484622&lang=zh_CN#rd"
-              target="_blank">1. 想了解它诞生的故事？</el-link>
-          </li>
-          <li>
-            <el-link type="info"
-              href="https://mp.weixin.qq.com/s?__biz=MjM5MDQ4NjUwMg==&mid=2649198238&idx=1&sn=31d5111d4a3bdc65ab1283612f1427f1&chksm=be5734178920bd0117a068f2c73897fd05c37bddba78efd62ccdf2bb6df5a0386172a4499143&token=677060446&lang=zh_CN#rd"
-              target="_blank">2. 想了解它的实现过程？</el-link>
-          </li>
-        </ul>
-      </div> -->
     </div>
     <div class="middle" style="margin-top: 1.8em; margin-right: 1%;">
       <el-link v-show="asideVisable" :underline="false" type="info" @click.native="hideAside"><i class="iconfont">&#xe659;</i></el-link>
@@ -456,9 +440,9 @@
             "Content-Type": "multipart/form-data"
           })
             .then(response => {
-              this.book_title = response.data.book_title.split(' ').join('_')
+              this.book_title = response.data.result.book_title.split(' ').join('_')
               this.form.tag = "#kindle/《" + this.book_title + "》"
-              this.result = response.data.result
+              this.result = response.data.result.book_notes
               this.show = true
               this.$nextTick(() => {
                 this.setHeight();

@@ -5,11 +5,11 @@
   <meta name="viewport"
     content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="icon" href="./static/favicon.ico">
+  <link rel="icon" href="./favicon.ico">
   <!-- import CSS -->
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <!-- iconfont -->
-  <link rel="stylesheet" href="https://at.alicdn.com/t/font_2701845_7hk2y21hi32.css">
+  <link rel="stylesheet" href="./static/font_2701845_7hk2y21hi32.css">
   <!-- main.css -->
   <link rel="stylesheet" href="./static/main.css">
   <title>Kindle to flomo</title>
@@ -129,12 +129,12 @@
                   <el-dropdown trigger="click" size='small'>
                     <span class="el-dropdown-link"><i class="el-icon-more el-icon--right"></i></span>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-if="!item.saved" icon="el-icon-upload" @click.native.stop="postone(item)">导入
+                      <el-dropdown-item v-if="!item.saved" icon="el-icon-upload" @click.native.stop="postone(item, index)">导入
                         flomo</el-dropdown-item>
                       <!-- <el-dropdown-item v-if="!item.saved" icon="el-icon-edit-outline" @click.native.stop="edit(item)">编辑</el-dropdown-item> -->
                       <el-dropdown-item v-if="item.saved" icon="el-icon-copy-document"
                         @click.native.stop="copyLink(item)">复制链接</el-dropdown-item>
-                      <el-dropdown-item v-if="!item.saved" icon="el-icon-delete" @click.native.stop="del(item,index)"
+                      <el-dropdown-item icon="el-icon-delete" @click.native.stop="del(item,index)"
                         divided>删除</el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
@@ -158,11 +158,6 @@
         </div>
       </div>
     </div>
-    <!-- footer -->
-    <div class="beian">
-        <el-link type="info" href="https://beian.miit.gov.cn/" target="_blank">京ICP备17071687号-2</el-link>
-    </div>
-    <!--  -->
   </div>
 </body>
 <!-- import Vue before Element -->

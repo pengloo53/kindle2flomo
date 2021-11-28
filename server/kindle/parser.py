@@ -72,7 +72,7 @@ def parse_csv_file(file_path):
                 result_json.append(the_result)
         return {
             "book_title": title,
-            "result": result_json
+            "book_notes": result_json
         }
 
 
@@ -135,5 +135,5 @@ def parse_html_file(file_path):
                 result_json.append(the_result)
         return {
             "book_title": book_title,
-            "result": result_json
+            "book_notes": result_json
         }

@@ -22,16 +22,17 @@ def allowed_file(filename):
 
 
 # 解析 Kindle 笔记文件，返回 result 对象
-def parse_file(filename):
-    result = {}
+def parse_file(file_path):
+    filename = os.path.basename(file_path)
+    print(file_path)
     ext = filename.rsplit('.', 1)[1]
-    file_save_path = os.path.join(BASE_PATH, UPLOAD_FOLDER, filename)
+    print(ext)
     if ext == 'html':
-        result = parse_html_file(file_save_path)
+        return parse_html_file(file_path)
     elif ext == 'csv':
-        result = parse_csv_file(file_save_path)
+        return parse_csv_file(file_path)
     else:
-        return result
+        return {}
 
 
 # 保存上传的文件，返回文件路径
@@ -40,16 +41,24 @@ def save_file(file):
         filename = file.filename
         ext = filename.rsplit('.', 1)[1]
         # 重命名文件保存，源文件名加上时间后缀，然后哈希散列，确保文件唯一性
-        filename = hashlib.md5(bytes(filename + '_' + str(time.time()), encoding="utf-8")) + '.' + ext
+        filename = hashlib.md5(bytes(filename + '_' + str(time.time()), encoding="utf-8")).hexdigest() + '.' + ext
         file_save_path = os.path.join(BASE_PATH, UPLOAD_FOLDER, filename)
         file.save(file_save_path)
-        return file_save_path
+        return {
+            'filename': filename,
+            'filepath': file_save_path
+        }
 
 
 # 获取读书笔记，根据笔记文件名
 @app.route('/get/<filename>', methods=['GET'])
 def get_notes(filename):
-    return parse_file(filename)
+    file_path = os.path.join(BASE_PATH, UPLOAD_FOLDER, filename)
+    result = parse_file(file_path)
+    return jsonify({
+        'result': result,
+        'filename': filename
+    })
 
 
 # 解析笔记文件服务，POST 上传文件并解析
@@ -57,18 +66,17 @@ def get_notes(filename):
 def parse():
     result = []
     file = request.files.get('file')
-    file_path = save_file(file)
-    
-        
-        
-       
-        result = parse_file(filename)
+    if file:
+        file_info = save_file(file)
+        filename = file_info['filename']
+        filepath = file_info['filepath']
+        result = parse_file(filepath)
         return jsonify({
-            'data': result,
+            'result': result,
             'filename': filename
         })
     else:
-        return result
+        return {}
 
 
 # 导入读书笔记到 flomo

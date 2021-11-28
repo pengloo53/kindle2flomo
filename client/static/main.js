@@ -260,9 +260,9 @@ let app = new Vue({
                     "Content-Type": "multipart/form-data"
                 })
                     .then(response => {
-                        this.book_title = response.data.book_title.split(' ').join('_')
+                        this.book_title = response.data.result.book_title.split(' ').join('_')
                         this.form.tag = "#kindle/《" + this.book_title + "》"
-                        this.result = response.data.result
+                        this.result = response.data.result.book_notes
                         this.show = true
                         this.$nextTick(() => {
                             this.setHeight();
@@ -288,7 +288,7 @@ let app = new Vue({
             this.result.splice(index, 1)
             this.flashCount();
         },
-        post(item) {
+        post(item, index) {
             let formData = new FormData();
             formData.append("api", this.api);
             formData.append("tag", this.form.tag);
@@ -307,6 +307,7 @@ let app = new Vue({
                     item.saved = true
                     item.selected = false
                     item.url = 'https://flomoapp.com/mine/?memo_id=' + response.data.memo.slug
+                    this.result.splice(index, 1, item)
                     this.flashCount();
                 } else {
                     this.$message.error('导入失败：' + response.data.message + '，请检查 Flomo API 设置是否正确');
@@ -315,7 +316,7 @@ let app = new Vue({
                 console.log(error);
             });
         },
-        postone(item) {
+        postone(item, index) {
             // api 校验
             if (!this.api) {
                 return this.$message.error('请设置 Flomo API');
@@ -326,7 +327,7 @@ let app = new Vue({
             if (item.saved) {
                 return this.$message.info('该 MEMO 已经上传至 Flomo')
             }
-            this.post(item);
+            this.post(item, index);
         },
         postsome() {
             // api 校验
