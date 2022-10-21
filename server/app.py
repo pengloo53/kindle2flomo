@@ -57,7 +57,8 @@ def get_notes(filename):
     result = parse_file(file_path)
     return jsonify({
         'result': result,
-        'filename': filename
+        'filename': filename,
+        'type': 'Kindle'
     })
 
 
@@ -73,7 +74,8 @@ def parse():
         result = parse_file(filepath)
         return jsonify({
             'result': result,
-            'filename': filename
+            'filename': filename,
+            'type': 'Kindle'
         })
     else:
         return {}
